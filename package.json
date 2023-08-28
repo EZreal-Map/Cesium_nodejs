@@ -1,0 +1,11 @@
+{
+  "name": "cesium_zjbq",
+  "version": "1.0.0",
+  "description": "点云洪水数据的3维可视化",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
