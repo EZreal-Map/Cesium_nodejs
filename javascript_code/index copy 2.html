@@ -1,0 +1,238 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>张家板桥</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+
+    <link rel="stylesheet" type="text/css" href="../Cesium-1.96/Build/Cesium/Widgets/widgets.css">
+    <script type="text/javascript" src="../Cesium-1.96/Build/Cesium/Cesium.js"></script>
+    <style>
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .cesium-widget-credits {
+            display: none !important;
+        }
+    </style>
+
+<body>
+    <div id="cesiumcontainer" style="width:100%;height:100%"></div>
+
+    <script type="text/javascript">
+        Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlODBjMmY1YS00NjZjLTQwZjUtYTVhNy05NDBiODliYWYwMzUiLCJpZCI6MTU1ODM0LCJpYXQiOjE2OTAwOTA4MTN9.s-rWLcdw5_e2j9Fz2l41ydsl23lAVJg2Q3XhThRUeRM";
+
+        var viewer = new Cesium.Viewer("cesiumcontainer", {
+            //搜索框
+            geocoder: false,
+            //home键
+            homeButton: false,
+            // 动画控件
+            animation: false,
+            //全屏按钮
+            fullscreenButton: false,
+            //场景模式选择器
+            sceneModePicker: false,
+            //时间轴
+            timeline: false,
+            //导航提示
+            navigationHelpButton: false,
+            //地图选择器
+            baseLayerPicker: false,
+            // imageryProvider: new Cesium.UrlTemplateImageryProvider({
+            //     url: "http://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+            //     minimumLevel: 1,
+            //     maximumLevel: 18
+            // }),
+            // terrain: Cesium.Terrain.fromWorldTerrain({
+            //     requestWaterMask: true,
+            //     requestVertexNormals: true,
+            // }),
+        })
+        // viewer.imageryLayers.add(
+        //     new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({
+        //         url: "https://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=8&ltype=4",
+        //         minimumLevel: 1,
+        //         maximumLevel: 18
+        //     }))
+        // )
+
+        viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
+            url: "./terrain/",
+        })
+
+
+
+        // 将视角定位到指定的经纬度
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(113.39811, 31.699212, 4000.0), // 例如：1000
+            orientation: {
+                heading: Cesium.Math.toRadians(0.0), // 指定航向角度
+                pitch: Cesium.Math.toRadians(-90.0), // 指定俯仰角度
+                roll: 0.0 // 指定翻滚角度
+            }
+        })
+        // // 等待Canvas完整生成后再设置willReadFrequently属性
+        // viewer.scene.postRender.addEventListener(function () {
+        //     const cesiumCanvas = viewer.scene.canvas;
+
+        //     if (cesiumCanvas) {
+        //         // 检查浏览器是否支持设置willReadFrequently属性
+        //         if ('getContextAttributes' in cesiumCanvas) {
+        //             const contextAttributes = cesiumCanvas.getContextAttributes();
+        //             if ('willReadFrequently' in contextAttributes) {
+        //                 contextAttributes.willReadFrequently = true;
+        //                 console.log('已设置willReadFrequently属性为true');
+        //             }
+        //         }
+        //     }
+        // });
+
+        // 生成Cesium颜色渐变数组，从浅蓝色到深蓝色
+        const numSegments = 16;
+        const startColor = "rgb(149, 208, 238)";
+        const endColor = "rgb(10,9,145)";
+
+        const colorGradient = generateCesiumColorGradient(numSegments, startColor, endColor);
+        // console.log(colorGradient[0]);
+        let directory = '../flood/30jiami/';
+        // let subcontent
+        fetch(directory + '0/subcontent.txt')
+            .then(response => response.text())
+            .then(data => {
+                const lines = data.split('\n').map(line => line.trim());
+                let subcontent = lines.map(Number);
+                console.log(subcontent);
+
+                // Define a function to fetch data for a given subcontent index
+                async function fetchDataForIndex(index) {
+                    try {
+                        const response = await fetch(directory + subcontent[index] + '/clearLLRHD.txt');
+                        const data = await response.text();
+                        const lines = data.split('\n');
+                        let count = 1;
+                        viewer.entities.removeAll();
+                        for (const line of lines) {
+                            let [longitude, latitude, radius, height, dem] = line.split(',');
+                            longitude = Number(longitude);
+                            latitude = Number(latitude);
+                            radius = Number(radius);
+                            height = Number(height);
+                            dem = Number(dem);
+                            // 创建点数据几何对象
+                            if (height >= 1) {
+                                count += 1;
+                                let topRadius = radius;
+                                let bottomRadius = radius;
+                                var cylinderEntity = viewer.entities.add({
+                                    name: 'Cylinder',
+                                    position: Cesium.Cartesian3.fromDegrees(longitude, latitude, dem + height / 2), // 设置圆柱体的位置，longitude经度，latitude纬度，height高度
+                                    cylinder: {
+
+                                        length: height, // 圆柱体的长度
+                                        topRadius: topRadius, // 顶部半径
+                                        bottomRadius: bottomRadius, // 底部半径
+                                        // slices: 3,
+                                        material: colorGradient[getIntervalIndex(height)], // 圆柱体的颜色和透明度
+                                        // outline: true, // 是否显示轮廓
+                                        // outlineColor: Cesium.Color.BLACK, // 轮廓的颜色
+                                        // clampToGround: true, // 将实体贴地
+                                        // height: 0, // 设置高度为0，使其贴地
+                                    }
+                                });
+                            }
+                        }
+
+                        console.log(`Processed subcontent[${index}]. Count: ${count}`);
+                    } catch (error) {
+                        console.error('出错:', error);
+                    }
+                }
+
+                let currentIndex = 0;
+
+                // Call fetchDataForIndex for the initial index
+                fetchDataForIndex(currentIndex);
+
+                // Set the interval to fetch data for the next index every 2 seconds
+                const intervalId = setInterval(() => {
+                    currentIndex++;
+
+                    if (currentIndex < subcontent.length) {
+
+                        fetchDataForIndex(currentIndex);
+                    } else {
+                        // If all data fetched, clear the interval
+                        clearInterval(intervalId);
+                    }
+                }, 20000); // Change 2000 to the desired interval time in milliseconds
+            })
+            .catch(error => {
+                console.error('读取文件出错:', error);
+            });
+
+
+
+
+
+
+
+
+        function generateCesiumColorGradient(numSegments, startColor, endColor) {
+            // 将RGB颜色转换为Cesium颜色
+            function rgbToCesiumColor(r, g, b) {
+                return new Cesium.Color(r / 255, g / 255, b / 255);
+            }
+
+            // 解析起始颜色以提取R、G、B值
+            const startColorValues = startColor.match(/\d+/g).map(Number);
+            const endColorValues = endColor.match(/\d+/g).map(Number);
+            const [startR, startG, startB] = startColorValues;
+            const [endR, endG, endB] = endColorValues;
+
+            // 获取颜色渐变数组
+            const gradientColors = [];
+            for (let i = 0; i < numSegments; i++) {
+                const red = startR + (endR - startR) * i / (numSegments - 1);
+                const green = startG + (endG - startG) * i / (numSegments - 1);
+                const blue = startB + (endB - startB) * i / (numSegments - 1);
+                const cesiumColor = rgbToCesiumColor(red, green, blue);
+                gradientColors.push(cesiumColor);
+            }
+
+            return gradientColors;
+        }
+
+
+        function getIntervalIndex(H) {
+            // 区间定义，第一个元素表示最小值，最后一个元素表示无穷大，其他值为各个区间的上限值
+            // const intervals = [0, 0.20, 0.50, 1.0, 1.50, 2.0, 2.5, 3, Number.POSITIVE_INFINITY];
+            const intervals = [0, 0.20, 0.50, 1.0, 1.50, 2.0, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, Number.POSITIVE_INFINITY];
+
+            // 检查H是否大于最后一个区间值，如果是，则属于最后一个区间
+            if (H > intervals[intervals.length - 1]) {
+                return intervals.length;
+            }
+
+            // 循环遍历所有区间，找到第一个H小于等于的区间，然后返回对应的索引
+            for (let i = 0; i < intervals.length; i++) {
+                if (H <= intervals[i]) {
+                    return i;
+                }
+            }
+
+            // 如果H小于所有区间的第一个值，则属于第一个区间
+            return 0;
+        }
+
+    </script>
+</body>
+
+</html>
