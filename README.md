@@ -78,7 +78,7 @@
 1. 在初始时刻文件夹写入XYD.txt，每行有3列，从左到右依次是X、Y、DEM（投影坐标），用于表示地形点云数据，也是洪水下表面`点云`数据集。
 2. 在每一时刻文件夹里面生成一个XYDpH.txt文件，每行有3列，从左到右依次是X、Y、DEM + H（投影坐标），用于表示洪水上表面`点云`数据集。
 
-### 1.5、getclearXYDDpHrgb.py
+### 1.5、getclearXYD_XYDpHrgb.py
 
 > 获取清除后的点云数据，一个坐标对应了2个点——XYDrgb（下表面点）和XYDpHrgb（上表面点）。
 
@@ -86,5 +86,9 @@
 
 > 1. 通过`H > threshold #0.05`判断点云数据要不要保留，再通过H的值确定每个点的rgb（`getColor.py`），拼接在XYZ数据的后面，保存为getclearXYDDpHrgb.txt。
 > 2. 把生成的txt文件，转换为getclearXYDDpHrgb.las。
+
+> 1.5、getclearXYD_XYDpHrgb.py 的子集合 --> getclearXYDpHrgb.py
+>
+> XYDpHrgb（上表面点）  保存为  1、clearXYDpHrgb.txt  -->  2、clearXYDpHrgb.las  
 
 ## 2、Cesium进行洪水渲染

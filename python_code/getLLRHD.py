@@ -1,3 +1,13 @@
+# 1.1、getLLRHD.py
+# 输入：读取初始时刻文件夹里面的center.txt文件、和每个时刻对应的文件夹里面的H、S文件。
+
+# 输出：
+
+# 1. 在初始时刻文件夹里面生成一个subcontent.txt文件，便于JavaScript获取子目录。（PS:JavaScript不容易获取正在运行子目录）。
+# 2. 在每一时刻文件夹里面生成一个LLRHD.txt文件，这些文件是程序主要目的，用于Cesium渲染不同时刻的洪水数据。
+
+# LLRHD.txt每行有5列，从左到右依次是LLRHD（Longitude,Latitude,Radius,Height,DEM）。
+
 import os
 import time
 from pyproj import Proj

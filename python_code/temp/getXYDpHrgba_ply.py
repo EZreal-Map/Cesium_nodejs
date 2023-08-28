@@ -20,9 +20,6 @@ def read_xyd_data(file_path):
     return data
 
 
-import numpy as np
-import trimesh
-
 def save_XYDDpHRGB_plydata(txt_file_path, ply_file_path):
     # 读取文件数据并转换为 NumPy 数组
     data = np.loadtxt(txt_file_path, delimiter=',', dtype=float)

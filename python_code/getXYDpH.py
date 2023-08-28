@@ -1,3 +1,13 @@
+# 1.4、getXYDpH.py
+
+# 输入：类似1.1、getLLRHD.py功能    读取初始时刻文件夹里面的center.txt文件、和每个时刻对应的文件夹里面的H、S文件。
+
+# 输出： 
+
+# 1. 在初始时刻文件夹写入XYD.txt，每行有3列，从左到右依次是X、Y、DEM（投影坐标），用于表示地形点云数据，也是洪水下表面点云数据集。
+# 2. 在每一时刻文件夹里面生成一个XYDpH.txt文件，每行有3列，从左到右依次是X、Y、DEM + H（投影坐标），用于表示洪水上表面点云数据集。
+
+
 import os
 import time
 # from pyproj import Proj

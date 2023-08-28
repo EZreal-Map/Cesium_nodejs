@@ -1,3 +1,11 @@
+# 1.3、statisticsLLRHD.py
+# 分别统计 
+# H > 0.01 
+# H > 0.05
+# H > 0.1
+# H > 0.15
+# 尝试统计每个点被使用的情况，输出保存在初始目录文件下的count_array_0.05.txt  threshold_0.05.png
+
 import time
 import os
 import numpy as np
@@ -55,7 +63,7 @@ center_file_path = os.path.join(
 with open(center_file_path, "r") as file:
     line_count = sum(1 for line in file)
 
-threshold = 0.05
+threshold = 0.15
 # 阈值
 
 count = 1

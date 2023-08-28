@@ -1,3 +1,12 @@
+# 1.5、getclearXYDDpHrgb.py
+
+# 获取清除后的点云数据，一个坐标对应了2个点——XYDrgb（下表面点）和XYDpHrgb（上表面点）。
+
+# 输入：读取上一步在每一时刻文件夹里面生成的XYDpH.txt文件和初始文件里面的XYD.txt。
+
+# 1. 通过H > threshold #0.05判断点云数据要不要保留，再通过H的值确定每个点的rgb（getColor.py），拼接在XYZ数据的后面，保存为getclearXYDDpHrgb.txt。
+# 2. 把生成的txt文件，转换为getclearXYDDpHrgb.las。
+
 import time
 import os
 import laspy
@@ -87,6 +96,7 @@ def read_and_filter_data(XYD_list_lines, input_file, output_file, threshold, gra
     kept_data = []
     deleted_data = 0
 
+    # input_file是每个时刻的XYDpH.txt
     with open(input_file, 'r') as f:
         lines = f.readlines()
 
@@ -98,12 +108,14 @@ def read_and_filter_data(XYD_list_lines, input_file, output_file, threshold, gra
                 if H >= threshold:
                     index = get_interval_index(H)
                     rgbList = gradient_colors[index]
-                    subsurface_point = lines[i].rstrip(
+                    # 上表面
+                    upsurface_point = lines[i].rstrip(
+                        '\n') + ',' + ','.join(str(element) for element in rgbList) + '\n'
+                    kept_data.append(upsurface_point)
+                    # 下表面
+                    subsurface_point = XYD_list_lines[i].rstrip(
                         '\n') + ',' + ','.join(str(element) for element in rgbList) + '\n'
                     kept_data.append(subsurface_point)
-                    # upsurface_point = XYD_list_lines[i].rstrip(
-                    #     '\n') + ',' + ','.join(str(element) for element in rgbList) + '\n'
-                    # kept_data.append(upsurface_point)
                 else:
                     deleted_data += 1
             except ValueError:
@@ -113,7 +125,7 @@ def read_and_filter_data(XYD_list_lines, input_file, output_file, threshold, gra
     with open(output_file, 'w') as f:
         f.writelines(kept_data)
 
-    return deleted_data, len(kept_data), kept_data
+    return deleted_data, (len(kept_data)/2), kept_data
 
 
 
@@ -125,7 +137,7 @@ xyd_file_path = os.path.join(
     directory_path, sorted_subdirectories[0], 'XYD.txt')
 with open(xyd_file_path, 'r') as f:
     XYD_list_lines = f.readlines()
-threshold = 0.00  # 阈值
+threshold = 0.05  # 阈值
 count = 1
 # 生成颜色渐变数组，从浅蓝色到深蓝色
 intervals = [0, 0.01,0.25, 0.50, 1.0, 1.50, 2.0, 2.5,
@@ -139,17 +151,20 @@ for directory in sorted_subdirectories[1:]:
     input_file = os.path.join(directory_path, directory, 'XYDpH.txt')
     # output_file = os.path.join(directory_path, directory, 'clearLLRHD.txt')
     output_file = os.path.join(
-        directory_path, directory, 'XYDDpHrgb_'+str(threshold)+'.txt')
+        directory_path, directory, 'clearXYD_XYDpHrgb_'+str(threshold)+'.txt')
     # # 如果生成文件的名字取错了，可以通过这个自动删除文件
-    # file_path_to_delete = os.path.join(
-    #     directory_path, directory, 'XYDDpH_'+str(threshold)+'.txt')
-    # os.remove(file_path_to_delete)
+    file_path_to_delete = os.path.join(
+        directory_path, directory, 'clearXYDDpHrgb_'+str(threshold)+'.txt')
+    os.remove(file_path_to_delete)
+    file_path_to_delete = os.path.join(
+        directory_path, directory, 'clearXYDDpHrgb_'+str(threshold)+'.las')
+    os.remove(file_path_to_delete)
     # 保存为XYDDpH.txt
     deleted_count, kept_count, kept_data = read_and_filter_data(
         XYD_list_lines, input_file, output_file, threshold, gradient_colors)  # 调用主函数
     # 保存为XYDDpH.las
     XYDpHlas_file_path = os.path.join(
-        directory_path, directory, 'XYDDpHrgb_'+str(threshold)+'.las')
+        directory_path, directory, 'clearXYD_XYDpHrgb_'+str(threshold)+'.las')
     save_XYDDpHRGB_lasdata(output_file,XYDpHlas_file_path)
     # 打印结果
     deleted_percentage = deleted_count / (deleted_count + kept_count) * 100

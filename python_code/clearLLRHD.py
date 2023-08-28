@@ -1,3 +1,9 @@
+# 1.2、clearLLRHD.py
+
+# 输入：读取上一步在每一时刻文件夹里面生成的LLRHD.txt文件。
+
+# 输出：清除H(水深)小于阈值的数据，比如threshold = 0.05  #阈值，生成精简后的洪水数据文件clearLLRHD.py。
+
 import time
 import os
 
