@@ -182,6 +182,11 @@ for directory in sorted_subdirectories[1:]:
         out_center_position[0], out_center_position[1], inverse=True)
     print(
         f"中心点的经纬度坐标为：X : {longitude}  Y : {latitude}  Z : {out_center_position[2]}")
+    # 将字符串写入文件
+    position_file_path = os.path.join(
+        directory_path, directory, 'center_point_position_'+str(threshold)+'.txt')
+    with open(position_file_path, "w") as file:
+        file.write(f"{longitude} {latitude} {out_center_position[2]}")
     count += 1
 
 # 记录结束时间
