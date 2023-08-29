@@ -6,7 +6,7 @@ import time
 import os
 import laspy
 import numpy as np
-
+from pyproj import Proj
 
 def get_subdirectories(directory_path):
     subdirectories = [name for name in os.listdir(
@@ -28,12 +28,19 @@ def save_XYDDpHRGB_lasdata(txt_file_path,las_file_path):
     # 读取文件数据并转换为NumPy数组
     data = np.loadtxt(txt_file_path, delimiter=',', dtype=float)
 
+    # 计算X、Y列的新坐标值（（最大值+最小值）/ 2 + 最小值）
+    delta_x = (data[:, 0].max() + data[:, 0].min()) / 2 
+    delta_y = (data[:, 1].max() + data[:, 1].min()) / 2 
+
+    # 计算Z列的最小值
+    delta_z = data[:, 2].min()
+
     # 创建LAS文件
     out_las = laspy.create(point_format=2) # 点格式2包含RGB数据
     # 将X、Y、Z坐标数据赋值给out_las对象
-    out_las.x = data[:, 0]
-    out_las.y = data[:, 1]
-    out_las.z = data[:, 2]
+    out_las.x = data[:, 0] - delta_x
+    out_las.y = data[:, 1] - delta_y
+    out_las.z = data[:, 2] - delta_z
 
     # 设置RGB颜色值
     out_las.red = data[:, 3].astype(np.uint16)
@@ -45,11 +52,14 @@ def save_XYDDpHRGB_lasdata(txt_file_path,las_file_path):
     out_las.header.min = [min(out_las.x), min(out_las.y), min(out_las.z)]
     out_las.header.max = [max(out_las.x), max(out_las.y), max(out_las.z)]
 
+    out_center_position = [delta_x,delta_y, delta_z]
     # 设置LAS文件的坐标系为WGS 84地理坐标系（EPSG:4326）
     # out_las.header.proj4 = '+proj=longlat +datum=WGS84 +no_defs'
 
     # 写入并保存LAS文件
     out_las.write(las_file_path)
+
+    return out_center_position
 
 
 def generate_color_gradient(num_segments, start_color, end_color):
@@ -132,6 +142,10 @@ xyd_file_path = os.path.join(
     directory_path, sorted_subdirectories[0], 'XYD.txt')
 with open(xyd_file_path, 'r') as f:
     XYD_list_lines = f.readlines()
+
+# 定义一个UTM投影坐标系统，用做center.txt坐标（utm113）转换为经纬度坐标
+utm113 = Proj("+proj=tmerc +lon_0=113.35 +y_0=0 +x_0=500000 +ellps=IAU76 \
++towgs84=-7.849095,18.661172,12.682502,0.809388,-1.667217,-56.719783,-3.30421e-007 +units=m +no_defs")
 threshold = 0.05  # 阈值
 count = 1
 # 生成颜色渐变数组，从浅蓝色到深蓝色
@@ -157,13 +171,17 @@ for directory in sorted_subdirectories[1:]:
     # 保存为XYDDpH.las
     XYDpHlas_file_path = os.path.join(
         directory_path, directory, 'clearXYDpHrgb_'+str(threshold)+'.las')
-    save_XYDDpHRGB_lasdata(output_file,XYDpHlas_file_path)
+    out_center_position = save_XYDDpHRGB_lasdata(output_file,XYDpHlas_file_path)
     # 打印结果
     deleted_percentage = deleted_count / (deleted_count + kept_count) * 100
     kept_percentage = kept_count / (deleted_count + kept_count) * 100
-    print(f'当前正在写入第{count}/{len(sorted_subdirectories[1:])}个文件夹')
+    print(f'当前正在写入第{count}/{len(sorted_subdirectories[1:])}个文件夹----{directory}')
     print(f"Deleted rows: {deleted_count:<5}   {deleted_percentage:.2f}%")
-    print(f"Kept rows:    {kept_count:<5}   {kept_percentage:.2f}%")
+    print(f"Kept rows:    {int(kept_count):<5}   {kept_percentage:.2f}%")
+    longitude, latitude = utm113(
+        out_center_position[0], out_center_position[1], inverse=True)
+    print(
+        f"中心点的经纬度坐标为：X : {longitude}  Y : {latitude}  Z : {out_center_position[2]}")
     count += 1
 
 # 记录结束时间
