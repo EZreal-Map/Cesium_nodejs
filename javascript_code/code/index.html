@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>张家板桥</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+
+    <link rel="stylesheet" type="text/css" href="../Cesium-1.108/Build/Cesium/Widgets/widgets.css">
+    <script type="text/javascript" src="../Cesium-1.108/Build/Cesium/Cesium.js"></script>
+    <style>
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .cesium-widget-credits {
+            display: none !important;
+        }
+
+        #startButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #AnimationButton {
+            position: absolute;
+            top: 20px;
+            right: 110px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+
+<body>
+    <div id="cesiumcontainer" style="width:100%;height:100%"></div>
+    <button id="startButton">Start</button>
+    <button id="AnimationButton">Animation</button>
+    <script type="text/javascript">
+        Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlODBjMmY1YS00NjZjLTQwZjUtYTVhNy05NDBiODliYWYwMzUiLCJpZCI6MTU1ODM0LCJpYXQiOjE2OTAwOTA4MTN9.s-rWLcdw5_e2j9Fz2l41ydsl23lAVJg2Q3XhThRUeRM";
+
+        var viewer = new Cesium.Viewer("cesiumcontainer", {
+            //搜索框
+            geocoder: false,
+            //home键
+            homeButton: false,
+            // 动画控件
+            animation: false,
+            //全屏按钮
+            fullscreenButton: false,
+            //场景模式选择器
+            sceneModePicker: false,
+            //时间轴
+            timeline: false,
+            //导航提示
+            navigationHelpButton: false,
+            //地图选择器
+            baseLayerPicker: false,
+            // imageryProvider: new Cesium.UrlTemplateImageryProvider({
+            //     url: "http://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+            //     minimumLevel: 1,
+            //     maximumLevel: 18
+            // }),
+            // terrain: Cesium.Terrain.fromWorldTerrain({
+            //     // requestWaterMask: true,
+            //     // requestVertexNormals: true,
+            // }),
+        })
+        // viewer.imageryLayers.add(
+        //     new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({
+        //         url: "https://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=8&ltype=4",
+        //         minimumLevel: 1,
+        //         maximumLevel: 18
+        //     }))
+        // )
+
+        // viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
+        //     url: "./terrain/",
+        // })
+
+
+
+        // 将视角定位到指定的经纬度
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(113.39811, 31.699212, 4000.0), // 例如：1000
+            orientation: {
+                heading: Cesium.Math.toRadians(0.0), // 指定航向角度
+                pitch: Cesium.Math.toRadians(-90.0), // 指定俯仰角度
+                roll: 0.0 // 指定翻滚角度
+            }
+        })
+
+        async function renderTilesetWithAnimation(assetIdArray, delay) {
+            for (const assetId of assetIdArray) {
+                try {
+                    // viewer.scene.primitives.removeAll(); // 清除上一个 tileset
+                    // console.dir(viewer.scene.primitives)
+                    console.log(viewer.scene.primitives.length)
+                    console.log(assetId)
+                    const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(assetId);
+                    tileset.maximumScreenSpaceError = 1; // 设置为一个较小的值，以实现最高的 LOD 精度
+                    viewer.scene.primitives.add(tileset);
+                    // await viewer.zoomTo(tileset);
+
+                    // await new Promise(resolve => setTimeout(resolve, delay)); // 等待一段时间
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+
+        const assetIdArray = [2221226, 2221227, 2221228, 2221231, 2221232, 2221233, 2221234, 2221236, 2221237, 2221239, 2221240, 2221241, 2221242, 2221243, 2221244, 2221245, 2221247, 2221248, 2221250, 2221255, 2221256, 2221258, 2221259, 2221260, 2221261, 2221263, 2221264, 2221266, 2221267, 2221268, 2221269, 2221321, 2221322, 2221323, 2221324, 2221325, 2221326, 2221327, 2221328, 2221329, 2221330, 2221331, 2221333, 2221334, 2221335, 2221336, 2221337, 2221338, 2221340, 2221341, 2221342, 2221343, 2221344, 2221345, 2221346, 2221347, 2221348, 2221350, 2221351, 2221352, 2221353, 2221357, 2221359, 2221360, 2221361, 2221364, 2221365, 2221366, 2221367, 2221368, 2221369, 2221370, 2221371, 2221372, 2221373, 2221374, 2221375, 2221376, 2221378, 2221379, 2221380, 2221382, 2221383, 2221384, 2221385, 2221386, 2221387, 2221388, 2221389, 2221390, 2221391, 2221392, 2221393, 2221394, 2221395, 2221397, 2221398, 2221399, 2221400, 2221427, 2221429, 2221430, 2221431, 2221432, 2221433, 2221434, 2221435, 2221436, 2221438, 2221440, 2221441, 2221443, 2221444, 2221651, 2221652, 2221653, 2221654, 2221655, 2221656, 2221657, 2221659, 2221660, 2221662, 2221663, 2221664, 2221665, 2221666, 2221667, 2221668, 2221669, 2221670, 2221672, 2221673, 2221675, 2221676, 2221677, 2221679, 2221680, 2221681, 2221682, 2221683, 2221685, 2221686, 2221687, 2221688, 2221689, 2221690, 2221691, 2221692, 2221693, 2221694, 2221695, 2221696, 2221697, 2221698, 2221699, 2221700, 2221702, 2221703, 2221705, 2221706, 2221707, 2221708, 2221735, 2221736, 2221737, 2221738, 2221740, 2221742, 2221743, 2221745, 2221746, 2221748, 2221749, 2221751]
+            ;/* Add more asset IDs here */
+        const delayBetweenRender = 0; // 每个 tileset 渲染之间的延迟时间（毫秒）
+
+        // renderTilesetWithAnimation(assetIdArray, delayBetweenRender);
+        document.querySelector('#startButton').addEventListener('click', () => {
+            renderTilesetWithAnimation(assetIdArray, delayBetweenRender);
+        });
+
+
+        function showPrimitivesWithAnimation(primitivesArray, delay) {
+            let currentIndex = 0;
+
+            const interval = setInterval(() => {
+                if (currentIndex < primitivesArray.length) {
+                    const currentPrimitive = primitivesArray[currentIndex];
+                    currentPrimitive.show = true;
+                    currentIndex++;
+                } else {
+                    clearInterval(interval); // 停止定时器
+                }
+            }, delay);
+        }
+
+        // 调用函数开始动画流显示
+        const delayBetweenShow = 100; // 每个原始对象显示的时间间隔（毫秒）
+
+        document.querySelector('#AnimationButton').addEventListener('click', () => {
+            showPrimitivesWithAnimation(viewer.scene.primitives._primitives, delayBetweenShow);
+        });
+
+        function showPrimitivesWithAnimation(primitivesArray, delay) {
+            let currentIndex = 0;
+            // viewer.scene.primitives.show = false
+            primitivesArray.forEach((primitive, index) => {
+                primitive.show = false;
+                console.log(`关闭: ${index}`)
+            });
+            const interval = setInterval(() => {
+                if (currentIndex < primitivesArray.length) {
+                    const currentPrimitive = primitivesArray[currentIndex];
+                    currentPrimitive.show = true;
+                    console.log(`打开: ${currentIndex}`)
+                    currentIndex++;
+                } else {
+                    clearInterval(interval); // 停止定时器
+                }
+            }, delay);
+        }
+
+    </script>
+</body>
+
+</html>
