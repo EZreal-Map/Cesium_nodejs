@@ -3,4 +3,6 @@ flood/
 # 忽略npm install包文件夹
 node_modules/
 # 忽略cesium安装包
-Cesium-1.108
+Cesium-1.108/
+# 忽略地形文件夹
+terrain/
