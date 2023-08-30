@@ -71,266 +71,271 @@
     <input type="text" id="inputNumber" value="0">
 
     <script type="text/javascript">
-        Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlODBjMmY1YS00NjZjLTQwZjUtYTVhNy05NDBiODliYWYwMzUiLCJpZCI6MTU1ODM0LCJpYXQiOjE2OTAwOTA4MTN9.s-rWLcdw5_e2j9Fz2l41ydsl23lAVJg2Q3XhThRUeRM";
 
-        const viewer = new Cesium.Viewer("cesiumContainer", {
-            //搜索框
-            geocoder: false,
-            //home键
-            homeButton: false,
-            // 动画控件
-            animation: false,
-            //全屏按钮
-            fullscreenButton: false,
-            //场景模式选择器
-            sceneModePicker: false,
-            //时间轴
-            timeline: false,
-            //导航提示
-            navigationHelpButton: false,
-            //地图选择器
-            baseLayerPicker: false,
-            // terrainProvider: Cesium.CesiumTerrainProvider.fromIonAssetId(
-            //     2226646
-            // ),
-        })
-        // viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-        //     url: "../../terrain/",
-        // })
+        window.startup = async function () {
+            'use strict';
+            Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlODBjMmY1YS00NjZjLTQwZjUtYTVhNy05NDBiODliYWYwMzUiLCJpZCI6MTU1ODM0LCJpYXQiOjE2OTAwOTA4MTN9.s-rWLcdw5_e2j9Fz2l41ydsl23lAVJg2Q3XhThRUeRM";
 
-        // viewer.scene.setTerrain(
-        //     Cesium.CesiumTerrainProvider.fromIonAssetId(2226646)
-        // );
-
-
-
-        // 将视角定位到指定的经纬度
-        viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(113.39811, 31.699212, 4000.0), // 例如：1000
-            orientation: {
-                heading: Cesium.Math.toRadians(0.0), // 指定航向角度
-                pitch: Cesium.Math.toRadians(-90.0), // 指定俯仰角度
-                roll: 0.0 // 指定翻滚角度
-            }
-        })
-
-
-
-        // 预加载按钮模块
-        let currentTileset;
-        let floodPrimitives = {}; // 用于建立索引和 tileset 的关系
-        async function renderTilesetWithAnimation(assetIdArray) {
-
-            // 异步加载 tileset 并建立映射关系
-            await Promise.all(assetIdArray.map(async (assetId, index) => {
-                try {
-                    const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(assetId, {
-                        show: false,
-                        preloadWhenHidden: true,
-                        maximumScreenSpaceError: 1 // Set to a smaller value for highest LOD accuracy
-                    });
-
-                    viewer.scene.primitives.add(tileset); // 添加到场景
-                    floodPrimitives[index] = tileset; // 建立索引和 tileset 的映射关系
-
-                    inputNumber.value = index + 1;
-                } catch (error) {
-                    console.log(error);
+            // 61.5508419991
+            const viewer = new Cesium.Viewer("cesiumContainer", {
+                geocoder: false,
+                //home键
+                homeButton: false,
+                // 动画控件
+                animation: false,
+                //全屏按钮
+                fullscreenButton: false,
+                //场景模式选择器
+                sceneModePicker: false,
+                //时间轴
+                timeline: false,
+                //导航提示
+                navigationHelpButton: false,
+                //地图选择器
+                baseLayerPicker: false,
+                // terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(
+                //     2226646
+                // ),
+                terrainProvider: new Cesium.CesiumTerrainProvider({
+                    url: "../../terrain/",
+                })
+            });
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(113.39811, 31.699212, 4000.0), // 例如：1000
+                orientation: {
+                    heading: Cesium.Math.toRadians(0.0), // 指定航向角度
+                    pitch: Cesium.Math.toRadians(-90.0), // 指定俯仰角度
+                    roll: 0.0 // 指定翻滚角度
                 }
-            }));
+            })
 
-            // 在所有 tileset 加载完成后执行的代码
-            console.log("全部加载完成");
-            console.log(Object.keys(floodPrimitives).length); // 输出映射关系的长度
-            floodPrimitives = Object.values(floodPrimitives)  //把对象变成数组
-            // 此时 indexToTilesetMap 对象中保存了索引和 tileset 的关系
-        }
+            // const viewer = new Cesium.Viewer("cesiumContainer", {
+            //     //搜索框
+            //     geocoder: false,
+            //     //home键
+            //     homeButton: false,
+            //     // 动画控件
+            //     animation: false,
+            //     //全屏按钮
+            //     fullscreenButton: false,
+            //     //场景模式选择器
+            //     sceneModePicker: false,
+            //     //时间轴
+            //     timeline: false,
+            //     //导航提示
+            //     navigationHelpButton: false,
+            //     //地图选择器
+            //     baseLayerPicker: false,
+            //     // terrainProvider: Cesium.CesiumTerrainProvider.fromIonAssetId(
+            //     //     2226646
+            //     // ),
+            // })
+            // viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
+            //     url: "../../terrain/",
+            // })
 
-        // async function renderTilesetWithAnimation(assetIdArray) {
-        //     for (let index = 0; index < assetIdArray.length; index++) {
-        //         const assetId = assetIdArray[index];
-        //         try {
-        //             currentTileset = await Cesium.Cesium3DTileset.fromIonAssetId(assetId, {
-        //                 show: false,
-        //                 preloadWhenHidden: true,
-        //                 maximumScreenSpaceError: 1 // Set to a smaller value for highest LOD accuracy
-        //             });
+            // viewer.scene.setTerrain(
+            //     Cesium.CesiumTerrainProvider.fromIonAssetId(2226646)
+            // );
 
-        //             const tileset = await viewer.scene.primitives.add(currentTileset);
 
-        //             inputNumber.value = index + 1;
-        //             console.log(viewer.scene.primitives.length);
-        //             console.log(assetId);
-        //         } catch (error) {
-        //             console.log(error);
-        //         }
-        //     }
-        // }
 
-        // async function renderTilesetWithAnimation(assetIdArray) {
-        //     const tilesetPromises = assetIdArray.map(async (assetId, index) => {
-        //         try {
-        //             currentTileset = await Cesium.Cesium3DTileset.fromIonAssetId(assetId, {
-        //                 show: false,
-        //                 preloadWhenHidden: true,
-        //                 maximumScreenSpaceError: 1 // Set to a smaller value for highest LOD accuracy
-        //             });
-        //             console.log(index)
-        //             const tileset = await viewer.scene.primitives.add(currentTileset);
-        //             return tileset;
-        //         } catch (error) {
-        //             console.log(error);
-        //         }
-        //     });
+            // 将视角定位到指定的经纬度
+            // viewer.camera.flyTo({
+            //     destination: Cesium.Cartesian3.fromDegrees(113.39811, 31.699212, 4000.0), // 例如：1000
+            //     orientation: {
+            //         heading: Cesium.Math.toRadians(0.0), // 指定航向角度
+            //         pitch: Cesium.Math.toRadians(-90.0), // 指定俯仰角度
+            //         roll: 0.0 // 指定翻滚角度
+            //     }
+            // })
 
-        //     // 等待所有 tileset 加载完成
-        //     const loadedTilesets = await Promise.all(tilesetPromises);
-        //     console.log("异步加载完成")
-        //     // 按照 assetIdArray 的顺序对 viewer.scene.primitives 进行排序
-        //     loadedTilesets.forEach((tileset, index) => {
-        //         viewer.scene.primitives.remove(tileset); // 先移除
-        //         viewer.scene.primitives.add(tileset); // 再按照顺序重新添加
-        //     });
 
-        //     // 更新 inputNumber
-        //     loadedTilesets.forEach((tileset, index) => {
-        //         inputNumber.value = index + 1;
-        //     });
-        // }
 
-        const assetIdArray = [2221226, 2221227, 2221228, 2221231, 2221232, 2221233, 2221234, 2221236, 2221237, 2221239, 2221240, 2221241, 2221242, 2221243, 2221244, 2221245, 2221247, 2221248, 2221250, 2221255, 2221256, 2221258, 2221259, 2221260, 2221261, 2221263, 2221264, 2221266, 2221267, 2221268, 2221269, 2221321, 2221322, 2221323, 2221324, 2221325, 2221326, 2221327, 2221328, 2221329, 2221330, 2221331, 2221333, 2221334, 2221335, 2221336, 2221337, 2221338, 2221340, 2221341, 2221342, 2221343, 2221344, 2221345, 2221346, 2221347, 2221348, 2221350, 2221351, 2221352, 2221353, 2221357, 2221359, 2221360, 2221361, 2221364, 2221365, 2221366, 2221367, 2221368, 2221369, 2221370, 2221371, 2221372, 2221373, 2221374, 2221375, 2221376, 2221378, 2221379, 2221380, 2221382, 2221383, 2221384, 2221385, 2221386, 2221387, 2221388, 2221389, 2221390, 2221391, 2221392, 2221393, 2221394, 2221395, 2221397, 2221398, 2221399, 2221400, 2221427, 2221429, 2221430, 2221431, 2221432, 2221433, 2221434, 2221435, 2221436, 2221438, 2221440, 2221441, 2221443, 2221444, 2221651, 2221652, 2221653, 2221654, 2221655, 2221656, 2221657, 2221659, 2221660, 2221662, 2221663, 2221664, 2221665, 2221666, 2221667, 2221668, 2221669, 2221670, 2221672, 2221673, 2221675, 2221676, 2221677, 2221679, 2221680, 2221681, 2221682, 2221683, 2221685, 2221686, 2221687, 2221688, 2221689, 2221690, 2221691, 2221692, 2221693, 2221694, 2221695, 2221696, 2221697, 2221698, 2221699, 2221700, 2221702, 2221703, 2221705, 2221706, 2221707, 2221708, 2221735, 2221736, 2221737, 2221738, 2221740, 2221742, 2221743, 2221745, 2221746, 2221748, 2221749, 2221751]
+            // 预加载按钮模块
+            let currentTileset;
+            let floodPrimitives = {}; // 用于建立索引和 tileset 的关系
+            async function renderTilesetWithAnimation(assetIdArray) {
+                // 异步加载 tileset 并建立映射关系
+                await Promise.all(assetIdArray.map(async (assetId, index) => {
+                    try {
+                        const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(assetId, {
+                            show: false,
+                            preloadWhenHidden: true,
+                            maximumScreenSpaceError: 1 // Set to a smaller value for highest LOD accuracy
+                        });
 
-            // const assetIdArray = [2221226, 2221241, 2221260, 2221341, 2221376, 2221400, 2221444, 2221676, 2221696, 2221751]
-            ;/* Add more asset IDs here */
+                        viewer.scene.primitives.add(tileset); // 添加到场景
+                        floodPrimitives[index] = tileset; // 建立索引和 tileset 的映射关系
 
-        document.querySelector('#startButton').addEventListener('click', () => {
-            renderTilesetWithAnimation(assetIdArray);
-        });
+                        inputNumber.value = index + 1;
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }));
 
-        // viewer.scene.primitives._primitives
-        // viewer.scene.primitives._primitives.forEach((primitive, index) => {
-        //         // primitive.show = false;
-        //         console.log(primitive.show)
-        //     });
+                // 在所有 tileset 加载完成后执行的代码
+                console.log("全部加载完成");
+                console.log(Object.keys(floodPrimitives).length); // 输出映射关系的长度
+                floodPrimitives = Object.values(floodPrimitives)  //把对象变成数组
+                // 此时 indexToTilesetMap 对象中保存了索引和 tileset 的关系
+            }
 
-        // 动画按钮模块
-        // 调用函数开始动画流显示
-        let delayBetweenShow = 100; // 每个原始对象显示的时间间隔（毫秒）
-        document.querySelector('#AnimationButton').addEventListener('click', () => {
-            showPrimitivesWithAnimation(floodPrimitives, delayBetweenShow);
-        });
+            // // async await 控制for循环的tileset同步add方式 慢但是简单因为加载的顺序好确定
+            // async function renderTilesetWithAnimation(assetIdArray) {
+            //     for (let index = 0; index < assetIdArray.length; index++) {
+            //         const assetId = assetIdArray[index];
+            //         try {
+            //             currentTileset = await Cesium.Cesium3DTileset.fromIonAssetId(assetId, {
+            //                 show: false,
+            //                 preloadWhenHidden: true,
+            //                 maximumScreenSpaceError: 1 // Set to a smaller value for highest LOD accuracy
+            //             });
 
-        function showPrimitivesWithAnimation(primitivesArray, delay) {
-            primitivesArray.forEach((primitive, index) => {
-                primitive.show = false;
-                // console.log(`关闭: ${index}`)
+            //             const tileset = await viewer.scene.primitives.add(currentTileset);
+
+            //             inputNumber.value = index + 1;
+            //             console.log(viewer.scene.primitives.length);
+            //             console.log(assetId);
+            //         } catch (error) {
+            //             console.log(error);
+            //         }
+            //     }
+            // }
+
+
+            const assetIdArray = [2221226, 2221227, 2221228, 2221231, 2221232, 2221233, 2221234, 2221236, 2221237, 2221239, 2221240, 2221241, 2221242, 2221243, 2221244, 2221245, 2221247, 2221248, 2221250, 2221255, 2221256, 2221258, 2221259, 2221260, 2221261, 2221263, 2221264, 2221266, 2221267, 2221268, 2221269, 2221321, 2221322, 2221323, 2221324, 2221325, 2221326, 2221327, 2221328, 2221329, 2221330, 2221331, 2221333, 2221334, 2221335, 2221336, 2221337, 2221338, 2221340, 2221341, 2221342, 2221343, 2221344, 2221345, 2221346, 2221347, 2221348, 2221350, 2221351, 2221352, 2221353, 2221357, 2221359, 2221360, 2221361, 2221364, 2221365, 2221366, 2221367, 2221368, 2221369, 2221370, 2221371, 2221372, 2221373, 2221374, 2221375, 2221376, 2221378, 2221379, 2221380, 2221382, 2221383, 2221384, 2221385, 2221386, 2221387, 2221388, 2221389, 2221390, 2221391, 2221392, 2221393, 2221394, 2221395, 2221397, 2221398, 2221399, 2221400, 2221427, 2221429, 2221430, 2221431, 2221432, 2221433, 2221434, 2221435, 2221436, 2221438, 2221440, 2221441, 2221443, 2221444, 2221651, 2221652, 2221653, 2221654, 2221655, 2221656, 2221657, 2221659, 2221660, 2221662, 2221663, 2221664, 2221665, 2221666, 2221667, 2221668, 2221669, 2221670, 2221672, 2221673, 2221675, 2221676, 2221677, 2221679, 2221680, 2221681, 2221682, 2221683, 2221685, 2221686, 2221687, 2221688, 2221689, 2221690, 2221691, 2221692, 2221693, 2221694, 2221695, 2221696, 2221697, 2221698, 2221699, 2221700, 2221702, 2221703, 2221705, 2221706, 2221707, 2221708, 2221735, 2221736, 2221737, 2221738, 2221740, 2221742, 2221743, 2221745, 2221746, 2221748, 2221749, 2221751]
+
+                // const assetIdArray = [2221226, 2221241, 2221260, 2221341, 2221376, 2221400, 2221444, 2221676, 2221696, 2221751]
+                ;/* Add more asset IDs here */
+
+            document.querySelector('#startButton').addEventListener('click', () => {
+                renderTilesetWithAnimation(assetIdArray);
             });
 
-            // setTimeout(function () {
-            //     delayForEach(primitivesArray, (primitive, index) => {
-            //         primitive.show = false;
-            //         console.log(`关闭: ${index}`);
-            //     }, delayBetweenShow)
-            // }, 1500);
+            // viewer.scene.primitives._primitives
+            // viewer.scene.primitives._primitives.forEach((primitive, index) => {
+            //         // primitive.show = false;
+            //         console.log(primitive.show)
+            //     });
 
-            let currentIndex = 0;
-            const length = primitivesArray.length
-            const interval = setInterval(() => {
-                if (currentIndex < length) {
-                    primitivesArray.forEach((primitive) => {
-                        primitive.show = false;
-                        // console.log(`关闭: ${index}`)
-                    });
-                    intervalIndex = 1
-                    if (currentIndex - intervalIndex >= 0) {
-                        primitivesArray[currentIndex - intervalIndex].show = false;
+            // 动画按钮模块
+            // 调用函数开始动画流显示
+            let delayBetweenShow = 100; // 每个原始对象显示的时间间隔（毫秒）
+            document.querySelector('#AnimationButton').addEventListener('click', () => {
+                showPrimitivesWithAnimation(floodPrimitives, delayBetweenShow);
+            });
+
+            function showPrimitivesWithAnimation(primitivesArray, delay) {
+                primitivesArray.forEach((primitive, index) => {
+                    primitive.show = false;
+                    // console.log(`关闭: ${index}`)
+                });
+
+
+                let currentIndex = 0;
+                const length = primitivesArray.length
+                const interval = setInterval(() => {
+                    if (currentIndex < length) {
+                        primitivesArray.forEach((primitive) => {
+                            primitive.show = false;
+                            // console.log(`关闭: ${index}`)
+                        });
+                        const intervalIndex = 1
+                        if (currentIndex - intervalIndex >= 0) {
+                            primitivesArray[currentIndex - intervalIndex].show = false;
+                        }
+
+                        currentTileset = primitivesArray[currentIndex]
+                        primitivesArray[currentIndex].show = true;
+                        console.log(`打开: ${currentIndex}`);
+                        cameraHeight_changed()
+                        // primitive_show(currentIndex, 1, true)
+                        inputNumber.value = currentIndex + 1
+                        currentIndex++;
+                        console.log("----------------------------")
+                    } else {
+                        clearInterval(interval); // 停止定时器
+                    }
+                }, delay);
+            }
+
+            async function delayForEach(array, callback, delayMs) {
+                for (let i = 0; i < array.length; i++) {
+                    callback(array[i], i);
+                    await delay(delayMs); // 使用之前定义的 delay 函数
+                }
+            }
+
+            function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+
+            // 监控cameraHeight 调整currentTileset.style
+            viewer.camera.changed.addEventListener(cameraHeight_changed)
+
+            function cameraHeight_changed() {
+                if (currentTileset) {
+                    // 获取相机的高度
+                    let cameraHeight = viewer.camera.positionCartographic.height;
+                    // if (cameraHeight > 4000) {
+                    //     viewer.camera.positionCartographic.height = 4000
+                    // }
+                    console.log("摄像机高度：" + cameraHeight)
+                    // 根据相机高度调整点云显示像素大小
+                    let pointCloudPixelSize;
+                    if (cameraHeight < 100) {
+                        pointCloudPixelSize = 15
+                    } else if (cameraHeight < 300) {
+                        pointCloudPixelSize = 10
+                    } else if (cameraHeight < 500) {
+                        pointCloudPixelSize = 8
+                    } else if (cameraHeight < 700) {
+                        pointCloudPixelSize = 6
+                    } else if (cameraHeight < 1000) {
+                        pointCloudPixelSize = 5
+                    } else if (cameraHeight < 2000) {
+                        pointCloudPixelSize = 3
+                    } else if (cameraHeight < 4000) {
+                        pointCloudPixelSize = 2
+                    } else {
+                        pointCloudPixelSize = 1
                     }
 
-                    currentTileset = primitivesArray[currentIndex]
-                    primitivesArray[currentIndex].show = true;
-                    console.log(`打开: ${currentIndex}`);
-                    cameraHeight_changed()
-                    // primitive_show(currentIndex, 1, true)
-                    inputNumber.value = currentIndex + 1
-                    currentIndex++;
-                    console.log("----------------------------")
-                } else {
-                    clearInterval(interval); // 停止定时器
-                }
-            }, delay);
-        }
-
-        async function delayForEach(array, callback, delayMs) {
-            for (let i = 0; i < array.length; i++) {
-                callback(array[i], i);
-                await delay(delayMs); // 使用之前定义的 delay 函数
-            }
-        }
-
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-
-        // 监控cameraHeight 调整currentTileset.style
-        viewer.camera.changed.addEventListener(cameraHeight_changed())
-
-        function cameraHeight_changed() {
-            if (currentTileset) {
-                // 获取相机的高度
-                let cameraHeight = viewer.camera.positionCartographic.height;
-                // if (cameraHeight > 4000) {
-                //     viewer.camera.positionCartographic.height = 4000
-                // }
-                console.log("摄像机高度：" + cameraHeight)
-                // 根据相机高度调整点云显示像素大小
-                if (cameraHeight < 100) {
-                    pointCloudPixelSize = 15
-                } else if (cameraHeight < 300) {
-                    pointCloudPixelSize = 10
-                } else if (cameraHeight < 500) {
-                    pointCloudPixelSize = 8
-                } else if (cameraHeight < 700) {
-                    pointCloudPixelSize = 6
-                } else if (cameraHeight < 1000) {
-                    pointCloudPixelSize = 5
-                } else if (cameraHeight < 2000) {
-                    pointCloudPixelSize = 3
-                } else if (cameraHeight < 4000) {
-                    pointCloudPixelSize = 2
-                } else {
-                    pointCloudPixelSize = 1
-                }
-
-                // 更新点云的显示像素大小
-                currentTileset.style = new Cesium.Cesium3DTileStyle({
-                    pointSize: pointCloudPixelSize // 设置为您想要的点大小
-                });
-            }
-
-        }
-
-
-
-        const inputNumber = document.querySelector('#inputNumber');
-
-        inputNumber.addEventListener('keyup', function (event) {
-            if (event.key === 'Enter') {
-                const inputValue = parseInt(inputNumber.value);
-                if (!isNaN(inputValue) && inputValue > 0 && inputValue <= 175) {
-                    // Valid input, display the result
-                    floodPrimitives.forEach((primitive, index) => {
-                        primitive.show = false;
-                        // console.log(`关闭: ${index}`)
+                    // 更新点云的显示像素大小
+                    currentTileset.style = new Cesium.Cesium3DTileStyle({
+                        pointSize: pointCloudPixelSize // 设置为您想要的点大小
                     });
-                    floodPrimitives[inputValue - 1].show = true
-                    inputValue
-                } else {
-                    // Invalid input, display an error message
-                    console.log('Invalid input. Please enter a number between 1 and 175.');
                 }
+
             }
-        });
+
+
+
+            const inputNumber = document.querySelector('#inputNumber');
+
+            inputNumber.addEventListener('keyup', function (event) {
+                if (event.key === 'Enter') {
+                    const inputValue = parseInt(inputNumber.value);
+                    if (!isNaN(inputValue) && inputValue > 0 && inputValue <= 175) {
+                        // Valid input, display the result
+                        floodPrimitives.forEach((primitive, index) => {
+                            primitive.show = false;
+                            // console.log(`关闭: ${index}`)
+                        });
+                        floodPrimitives[inputValue - 1].show = true
+                        inputValue
+                    } else {
+                        // Invalid input, display an error message
+                        console.log('Invalid input. Please enter a number between 1 and 175.');
+                    }
+                }
+            });
+        };
+
+        window.startup()
+
     </script>
 </body>
 
