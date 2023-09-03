@@ -91,4 +91,222 @@
 >
 > XYDpHrgb（上表面点）  保存为  1、clearXYDpHrgb.txt  -->  2、clearXYDpHrgb.las  
 
-## 2、Cesium进行洪水渲染
+## 2、洪水数据转换为3D-Tiles格式
+
+### 2.1、通过[Cesium ion REST API](https://cesium.com/learn/ion/ion-upload-rest/)批量自动化上传点云数据(.las)
+
+- **Step 1：将数据信息发送到/v1/assets**
+
+  ```javascript
+  const response = await request({
+      url: 'https://api.cesium.com/v1/assets',
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      json: true,
+      body: {
+          name: `30jiami_${index + 1}_${value}`,
+          description: `${position}`,
+          type: '3DTILES',
+          options: {
+              sourceType: 'POINT_CLOUD',
+              // position: [113.3959004660036, 31.70498971207568, 61.091201],
+              position: position,
+              geometryCompression: "NONE"
+          }
+      }
+  });
+  ```
+
+  ​
+
+- **Step 2：使用 response.uploadLocation 上传文件到 ion**
+
+  ```javascript
+  const uploadLocation = response.uploadLocation;
+  const s3 = new AWS.S3({
+      apiVersion: '2006-03-01',
+      region: 'us-east-1',
+      signatureVersion: 'v4',
+      endpoint: uploadLocation.endpoint,
+      credentials: new AWS.Credentials(
+          uploadLocation.accessKey,
+          uploadLocation.secretAccessKey,
+          uploadLocation.sessionToken)
+  });
+
+  await s3.upload({
+      Body: fs.createReadStream(input),
+      Bucket: uploadLocation.bucket,
+      Key: `${uploadLocation.prefix}clearXYDpHrgb_0.05.las`
+  }).on('httpUploadProgress', function (progress) {
+      console.log(`Upload: ${((progress.loaded / progress.total) * 100).toFixed(2)}%`);
+  }).promise();
+  ```
+
+  ​
+
+- **Step 3：告诉 ion 我们已经完成文件上传**
+
+  ```javascript
+  const onComplete = response.onComplete;
+  await request({
+      url: onComplete.url,
+      method: onComplete.method,
+      headers: { Authorization: `Bearer ${accessToken}` },
+      json: true,
+      body: onComplete.fields
+  });
+  ```
+
+  ​
+
+- **Step 4：监控切片过程并在完成时报告**
+
+  ```javascript
+  async function waitUntilReady() {
+      const assetId = response.assetMetadata.id;
+      console.log(`Creating new asset: ${assetId}`);
+
+      // 发送获取元数据的 GET 请求
+      const assetMetadata = await request({
+          url: `https://api.cesium.com/v1/assets/${assetId}`,
+          headers: { Authorization: `Bearer ${accessToken}` },
+          json: true
+      });
+
+      const status = assetMetadata.status;
+      if (status === 'COMPLETE') {
+          console.log('Asset tiled successfully');
+          console.log(`在 ion 中查看：https://cesium.com/ion/assets/${assetMetadata.id}`);
+      } else if (status === 'DATA_ERROR') {
+          console.log('ion 检测到上传数据的问题。');
+      } else if (status === 'ERROR') {
+          console.log('发生未知的切片错误，请联系 support@cesium.com。');
+      } else {
+          if (status === 'NOT_STARTED') {
+              console.log('切片管道正在初始化。');
+          } else { // IN_PROGRESS
+              console.log(`资源完成度：${assetMetadata.percentComplete}%。`);
+          }
+      }
+  }
+  ```
+
+  ​
+
+## 3、Cesium进行洪水渲染
+
+### 3.1、预加载（不显示但是渲染）
+
+> 通过assetID访问Cesium Ion上传的洪水切片（自动从.las -->转换为 3D Tiles）
+
+```javascript
+let floodPrimitives = {}; // 用于建立索引和 tileset 的关系
+async function renderTilesetWithAnimation(assetIdArray) {
+    // 异步加载 tileset 并建立映射关系
+    await Promise.all(assetIdArray.map(async (assetId, index) => {
+        try {
+            const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(assetId, {
+                show: false, // 不显示
+                preloadWhenHidden: true,  // 渲染
+                maximumScreenSpaceError: 1 
+                // Set to a smaller value for highest LOD accuracy
+            });
+
+            viewer.scene.primitives.add(tileset); // 添加到场景
+            floodPrimitives[index] = tileset; // 建立索引和 tileset 的映射关系
+
+            inputNumber.value = index + 1;
+        } catch (error) {
+            console.log(error);
+        }
+    }));
+
+    // 在所有 tileset 加载完成后执行的代码
+    console.log("全部加载完成");
+    console.log(Object.keys(floodPrimitives).length); // 输出映射关系的长度
+    floodPrimitives = Object.values(floodPrimitives)  //把对象变成数组
+    // 此时 indexToTilesetMap 对象中保存了索引和 tileset 的关系
+}
+```
+
+### 3.2、显示动画（顺序显示洪水切片）
+
+```javascript
+function showPrimitivesWithAnimation(primitivesArray, delay) {
+    // 检查并关闭所以的洪水切片
+    primitivesArray.forEach((primitive, index) => {
+        primitive.show = false;
+        // console.log(`关闭: ${index}`)
+    });
+    // 顺序按照delay显示不同洪水切片，与隐藏前一个
+    let currentIndex = 0;
+    const length = primitivesArray.length
+    const interval = setInterval(() => {
+        if (currentIndex < length) {
+            primitivesArray.forEach((primitive) => {
+                primitive.show = false;
+                // console.log(`关闭: ${index}`)
+            });
+            const intervalIndex = 1
+            if (currentIndex - intervalIndex >= 0) {
+                primitivesArray[currentIndex - intervalIndex].show = false;
+            }
+            currentTileset = primitivesArray[currentIndex]
+            primitivesArray[currentIndex].show = true;
+            console.log(`打开: ${currentIndex}`);
+            // 调用相机高度变化的监听事件 调整点云的lod显示
+            cameraHeight_changed()
+            // primitive_show(currentIndex, 1, true)
+            inputNumber.value = currentIndex + 1
+            currentIndex++;
+            console.log("----------------------------")
+        } else {
+            clearInterval(interval); // 停止定时器
+        }
+    }, delay);
+}
+```
+
+### 3.3、相机高度变化的监听事件 调整点云的lod显示
+
+```javascript
+// 监控cameraHeight 调整currentTileset.style
+viewer.camera.changed.addEventListener(cameraHeight_changed)
+
+function cameraHeight_changed() {
+    if (currentTileset) {
+        // 获取相机的高度
+        let cameraHeight = viewer.camera.positionCartographic.height;
+        // if (cameraHeight > 4000) {
+        //     viewer.camera.positionCartographic.height = 4000
+        // }
+        console.log("摄像机高度：" + cameraHeight)
+        // 根据相机高度调整点云显示像素大小
+        let pointCloudPixelSize;
+        if (cameraHeight < 100) {
+            pointCloudPixelSize = 15
+        } else if (cameraHeight < 300) {
+            pointCloudPixelSize = 10
+        } else if (cameraHeight < 500) {
+            pointCloudPixelSize = 8
+        } else if (cameraHeight < 700) {
+            pointCloudPixelSize = 6
+        } else if (cameraHeight < 1000) {
+            pointCloudPixelSize = 5
+        } else if (cameraHeight < 2000) {
+            pointCloudPixelSize = 3
+        } else if (cameraHeight < 4000) {
+            pointCloudPixelSize = 2
+        } else {
+            pointCloudPixelSize = 1
+        }
+        console.log("pointCloudPixelSize：" + pointCloudPixelSize)
+        // 更新点云的显示像素大小
+        currentTileset.style = new Cesium.Cesium3DTileStyle({
+            pointSize: pointCloudPixelSize // 设置为您想要的点大小
+        });
+    }
+}
+```
+

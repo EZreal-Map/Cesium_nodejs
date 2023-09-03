@@ -213,7 +213,7 @@
 
             // const assetIdArray = [2221226, 2221241, 2221260, 2221341, 2221376, 2221400, 2221444, 2221676, 2221696, 2221751];
             /* Add more asset IDs here */
-            // const assetIdArray = [2241208, 2241210, 2241211, 2241212, 2241213]  //精度为0.01的测试
+            // const assetIdArray = [2241210, 2241211, 2241212, 2241213]  //精度为0.01的测试
             document.querySelector('#startButton').addEventListener('click', () => {
                 renderTilesetWithAnimation(assetIdArray);
             });
@@ -232,12 +232,12 @@
             });
 
             function showPrimitivesWithAnimation(primitivesArray, delay) {
+                // 检查并关闭所以的洪水切片
                 primitivesArray.forEach((primitive, index) => {
                     primitive.show = false;
                     // console.log(`关闭: ${index}`)
                 });
-
-
+                // 顺序按照delay显示不同洪水切片，与隐藏前一个
                 let currentIndex = 0;
                 const length = primitivesArray.length
                 const interval = setInterval(() => {
@@ -250,10 +250,10 @@
                         if (currentIndex - intervalIndex >= 0) {
                             primitivesArray[currentIndex - intervalIndex].show = false;
                         }
-
                         currentTileset = primitivesArray[currentIndex]
                         primitivesArray[currentIndex].show = true;
                         console.log(`打开: ${currentIndex}`);
+                        // 调用相机高度变化的监听事件 调整点云的lod显示
                         cameraHeight_changed()
                         // primitive_show(currentIndex, 1, true)
                         inputNumber.value = currentIndex + 1
@@ -265,18 +265,7 @@
                 }, delay);
             }
 
-            async function delayForEach(array, callback, delayMs) {
-                for (let i = 0; i < array.length; i++) {
-                    callback(array[i], i);
-                    await delay(delayMs); // 使用之前定义的 delay 函数
-                }
-            }
-
-            function delay(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-
-
+            // 调用相机高度变化的监听事件 调整点云的lod显示
             // 监控cameraHeight 调整currentTileset.style
             viewer.camera.changed.addEventListener(cameraHeight_changed)
 
@@ -313,7 +302,6 @@
                         pointSize: pointCloudPixelSize // 设置为您想要的点大小
                     });
                 }
-
             }
 
 
