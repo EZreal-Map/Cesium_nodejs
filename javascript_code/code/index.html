@@ -94,8 +94,8 @@
                 //地图选择器
                 baseLayerPicker: false,
                 terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(
-                    2226646
-                ),
+                    2248627
+                )
                 // terrainProvider: new Cesium.CesiumTerrainProvider({
                 //     url: "../../terrain/",
                 // })
@@ -109,47 +109,8 @@
                 }
             })
 
-            // const viewer = new Cesium.Viewer("cesiumContainer", {
-            //     //搜索框
-            //     geocoder: false,
-            //     //home键
-            //     homeButton: false,
-            //     // 动画控件
-            //     animation: false,
-            //     //全屏按钮
-            //     fullscreenButton: false,
-            //     //场景模式选择器
-            //     sceneModePicker: false,
-            //     //时间轴
-            //     timeline: false,
-            //     //导航提示
-            //     navigationHelpButton: false,
-            //     //地图选择器
-            //     baseLayerPicker: false,
-            //     // terrainProvider: Cesium.CesiumTerrainProvider.fromIonAssetId(
-            //     //     2226646
-            //     // ),
-            // })
-            // viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-            //     url: "../../terrain/",
-            // })
-
-            // viewer.scene.setTerrain(
-            //     Cesium.CesiumTerrainProvider.fromIonAssetId(2226646)
-            // );
-
-
-
-            // 将视角定位到指定的经纬度
-            // viewer.camera.flyTo({
-            //     destination: Cesium.Cartesian3.fromDegrees(113.39811, 31.699212, 4000.0), // 例如：1000
-            //     orientation: {
-            //         heading: Cesium.Math.toRadians(0.0), // 指定航向角度
-            //         pitch: Cesium.Math.toRadians(-90.0), // 指定俯仰角度
-            //         roll: 0.0 // 指定翻滚角度
-            //     }
-            // })
             const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(2236714, {
+                // heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
                 // show: false,
                 // preloadWhenHidden: true,
                 // maximumScreenSpaceError: 1 // Set to a smaller value for highest LOD accuracy
