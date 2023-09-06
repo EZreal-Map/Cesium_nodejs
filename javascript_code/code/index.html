@@ -278,7 +278,9 @@
                             primitive.show = false;
                             // console.log(`关闭: ${index}`)
                         });
-                        floodPrimitives[inputValue - 1].show = true
+                        // 修改currentTileset
+                        currentTileset = floodPrimitives[inputValue - 1];
+                        currentTileset.show = true
                         inputValue
                     } else {
                         // Invalid input, display an error message
