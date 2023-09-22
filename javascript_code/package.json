@@ -30,8 +30,11 @@
   },
   "dependencies": {
     "aws-sdk": "^2.904.0",
+    "canvas": "^2.11.2",
     "request": "^2.88.2",
-    "request-promise": "^4.2.6"
+    "request-promise": "^4.2.6",
+    "three": "^0.156.1",
+    "vblob": "^1.1.0"
   },
   "eslintConfig": {
     "extends": "cesium/node"

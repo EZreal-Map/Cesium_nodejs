@@ -91,6 +91,10 @@
 >
 > XYDpHrgb（上表面点）  保存为  1、clearXYDpHrgb.txt  -->  2、clearXYDpHrgb.las  
 
+>  1.6、getclearXYDpHrgb.py 的子集合  --> getHrgb.py
+>
+> 保存为  1、Hrgb.txt  
+
 ## 2、洪水数据转换为3D-Tiles格式
 
 ### 2.1、通过[Cesium ion REST API](https://cesium.com/learn/ion/ion-upload-rest/)批量自动化上传点云数据(.las)

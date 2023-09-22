@@ -36,7 +36,7 @@ async function cesium_ion_post(input, position, value, index) {
                 // baseTerrainId: 1,
                 // position: [113.3959004660036, 31.70498971207568, 61.091201],
                 position,
-                geometryCompression: "NONE"
+                geometryCompression: 'NONE'
             }
         }
     });
@@ -94,16 +94,14 @@ async function cesium_ion_post(input, position, value, index) {
             console.log('ion detected a problem with the uploaded data.');
         } else if (status === 'ERROR') {
             console.log('An unknown tiling error occurred, please contact support@cesium.com.');
-        } else {
-            if (status === 'NOT_STARTED') {
-                console.log('Tiling pipeline initializing.');
-            } else { // IN_PROGRESS
-                console.log(`Asset is ${assetMetadata.percentComplete}% complete.`);
-            }
-
-            // Not done yet, check again in 10 seconds
-            // setTimeout(waitUntilReady, 10000);
+        } else if (status === 'NOT_STARTED') {
+            console.log('Tiling pipeline initializing.');
+        } else { // IN_PROGRESS
+            console.log(`Asset is ${assetMetadata.percentComplete}% complete.`);
         }
+
+        // Not done yet, check again in 10 seconds
+        // setTimeout(waitUntilReady, 10000);
     }
 
     waitUntilReady();

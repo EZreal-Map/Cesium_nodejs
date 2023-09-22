@@ -1,3 +1,4 @@
+// eslint-disable-next-line strict
 const fs = require('fs');
 const path = require('path');
 const { cesium_ion_post } = require('./cesium_request.js');
@@ -16,7 +17,7 @@ async function main() {
             const position = position_str.trim().split(' ').map(parseFloat);
             await cesium_ion_post(input, position, value, index);
             console.log('Array of values:', position);
-            console.log(`cesium_ion_post completed for value: ${index + 1} - ${value}`,);
+            console.log(`cesium_ion_post completed for value: ${index + 1} - ${value}`);
         }
     } catch (err) {
         console.error('Error:', err);

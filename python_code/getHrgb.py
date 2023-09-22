@@ -1,17 +1,12 @@
-# 1.5、getclearXYDDpHrgb.py
-
-# 获取清除后的点云数据，一个坐标对应了2个点——XYDrgb（下表面点）和XYDpHrgb（上表面点）。
-
-# 输入：读取上一步在每一时刻文件夹里面生成的XYDpH.txt文件和初始文件里面的XYD.txt。
-
-# 1. 通过H > threshold #0.05判断点云数据要不要保留，再通过H的值确定每个点的rgb（getColor.py），拼接在XYZ数据的后面，保存为getclearXYDDpHrgb.txt。
-# 2. 把生成的txt文件，转换为getclearXYDDpHrgb.las。 上表面+下表面都有
+# 1.6、getclearXYDpHrgb.py 的父集合  --> getHrgb.py
+# threshold = 0  # 阈值
+# 保存为  1、Hrgb.txt  
 
 import time
 import os
 import laspy
 import numpy as np
-
+from pyproj import Proj
 
 def get_subdirectories(directory_path):
     subdirectories = [name for name in os.listdir(
@@ -33,12 +28,19 @@ def save_XYDDpHRGB_lasdata(txt_file_path,las_file_path):
     # 读取文件数据并转换为NumPy数组
     data = np.loadtxt(txt_file_path, delimiter=',', dtype=float)
 
+    # 计算X、Y列的新坐标值（（最大值+最小值）/ 2 + 最小值）
+    delta_x = (data[:, 0].max() + data[:, 0].min()) / 2 
+    delta_y = (data[:, 1].max() + data[:, 1].min()) / 2 
+
+    # 计算Z列的最小值
+    delta_z = data[:, 2].min()
+
     # 创建LAS文件
     out_las = laspy.create(point_format=2) # 点格式2包含RGB数据
     # 将X、Y、Z坐标数据赋值给out_las对象
-    out_las.x = data[:, 0]
-    out_las.y = data[:, 1]
-    out_las.z = data[:, 2]
+    out_las.x = data[:, 0] - delta_x
+    out_las.y = data[:, 1] - delta_y
+    out_las.z = data[:, 2] - delta_z
 
     # 设置RGB颜色值
     out_las.red = data[:, 3].astype(np.uint16)
@@ -50,11 +52,14 @@ def save_XYDDpHRGB_lasdata(txt_file_path,las_file_path):
     out_las.header.min = [min(out_las.x), min(out_las.y), min(out_las.z)]
     out_las.header.max = [max(out_las.x), max(out_las.y), max(out_las.z)]
 
+    out_center_position = [delta_x,delta_y, delta_z]
     # 设置LAS文件的坐标系为WGS 84地理坐标系（EPSG:4326）
     # out_las.header.proj4 = '+proj=longlat +datum=WGS84 +no_defs'
 
     # 写入并保存LAS文件
     out_las.write(las_file_path)
+
+    return out_center_position
 
 
 def generate_color_gradient(num_segments, start_color, end_color):
@@ -83,16 +88,7 @@ def get_interval_index(H):
     # 如果H小于所有区间的第一个值，则属于第一个区间
     return 0
 
-
-# 主函数main()
-# 记录开始时间
-start_time = time.time()
-# 替换为你的大文件夹路径
-directory_path = '../flood/30jiami'
-subdirectories = get_subdirectories(directory_path)
-
-
-def read_and_filter_data(XYD_list_lines, input_file, output_file, threshold, gradient_colors):
+def read_and_filter_data(XYD_list_lines, input_file, output_file, gradient_colors):
     kept_data = []
     deleted_data = 0
 
@@ -105,19 +101,18 @@ def read_and_filter_data(XYD_list_lines, input_file, output_file, threshold, gra
             XYD_list = XYD_list_lines[i].rstrip('\n').split(',')
             try:
                 H = float(XYDpH_list[2])-float(XYD_list[2])
-                if H >= threshold:
-                    index = get_interval_index(H)
-                    rgbList = gradient_colors[index]
-                    # 上表面
-                    upsurface_point = lines[i].rstrip(
-                        '\n') + ',' + ','.join(str(element) for element in rgbList) + '\n'
-                    kept_data.append(upsurface_point)
-                    # 下表面
-                    subsurface_point = XYD_list_lines[i].rstrip(
-                        '\n') + ',' + ','.join(str(element) for element in rgbList) + '\n'
-                    kept_data.append(subsurface_point)
-                else:
-                    deleted_data += 1
+                # if H >= threshold:
+                index = get_interval_index(H)
+                rgbList = gradient_colors[index]
+                # 上表面
+                upsurface_point = str(H) + ',' + ','.join(str(element) for element in rgbList) + '\n'
+                kept_data.append(upsurface_point)
+                # 下表面
+                # subsurface_point = XYD_list_lines[i].rstrip(
+                #     '\n') + ',' + ','.join(str(element) for element in rgbList) + '\n'
+                # kept_data.append(subsurface_point)
+            # else:
+            #     deleted_data += 1
             except ValueError:
                 print(f"Error: Invalid data format in line: {lines[i]}")
     kept_data[-1] = kept_data[-1].rstrip('\n')  # 移除末尾的换行符
@@ -125,11 +120,14 @@ def read_and_filter_data(XYD_list_lines, input_file, output_file, threshold, gra
     with open(output_file, 'w') as f:
         f.writelines(kept_data)
 
-    return deleted_data, (len(kept_data)/2), kept_data
+    return deleted_data, len(kept_data), kept_data
 
-
-
-
+# 主函数main()
+# 记录开始时间
+start_time = time.time()
+# 替换为你的大文件夹路径
+directory_path = '../flood/30jiami'
+subdirectories = get_subdirectories(directory_path)
 
 # 按照数字大小排序
 sorted_subdirectories = sorted(subdirectories, key=lambda x: int(x))
@@ -137,7 +135,11 @@ xyd_file_path = os.path.join(
     directory_path, sorted_subdirectories[0], 'XYD.txt')
 with open(xyd_file_path, 'r') as f:
     XYD_list_lines = f.readlines()
-threshold = 0.05  # 阈值
+
+# 定义一个UTM投影坐标系统，用做center.txt坐标（utm113）转换为经纬度坐标
+utm113 = Proj("+proj=tmerc +lon_0=113.35 +y_0=0 +x_0=500000 +ellps=IAU76 \
++towgs84=-7.849095,18.661172,12.682502,0.809388,-1.667217,-56.719783,-3.30421e-007 +units=m +no_defs")
+# threshold = 0  # 阈值
 count = 1
 # 生成颜色渐变数组，从浅蓝色到深蓝色
 intervals = [0, 0.01,0.25, 0.50, 1.0, 1.50, 2.0, 2.5,
@@ -149,29 +151,35 @@ gradient_colors = generate_color_gradient(
     num_segments, start_color, end_color)
 for directory in sorted_subdirectories[1:]:
     input_file = os.path.join(directory_path, directory, 'XYDpH.txt')
-    # output_file = os.path.join(directory_path, directory, 'clearLLRHD.txt')
+    # output_file = os.path.join(directory_path, directory, 'LLRHD.txt')
     output_file = os.path.join(
-        directory_path, directory, 'clearXYD_XYDpHrgb_'+str(threshold)+'.txt')
+        directory_path, directory, 'Hrgb.txt')
     # # 如果生成文件的名字取错了，可以通过这个自动删除文件
     file_path_to_delete = os.path.join(
-        directory_path, directory, 'clearXYDDpHrgb_'+str(threshold)+'.txt')
-    os.remove(file_path_to_delete)
-    file_path_to_delete = os.path.join(
-        directory_path, directory, 'clearXYDDpHrgb_'+str(threshold)+'.las')
+        directory_path, directory, 'XYDpHrgb.txt')
     os.remove(file_path_to_delete)
     # 保存为XYDDpH.txt
     deleted_count, kept_count, kept_data = read_and_filter_data(
-        XYD_list_lines, input_file, output_file, threshold, gradient_colors)  # 调用主函数
+        XYD_list_lines, input_file, output_file, gradient_colors)  # 调用主函数
     # 保存为XYDDpH.las
-    XYDpHlas_file_path = os.path.join(
-        directory_path, directory, 'clearXYD_XYDpHrgb_'+str(threshold)+'.las')
-    save_XYDDpHRGB_lasdata(output_file,XYDpHlas_file_path)
+    # XYDpHlas_file_path = os.path.join(
+    #     directory_path, directory, 'XYDpHrgb_'+str(threshold)+'.las')
+    # out_center_position = save_XYDDpHRGB_lasdata(output_file,XYDpHlas_file_path)
     # 打印结果
     deleted_percentage = deleted_count / (deleted_count + kept_count) * 100
     kept_percentage = kept_count / (deleted_count + kept_count) * 100
-    print(f'当前正在写入第{count}/{len(sorted_subdirectories[1:])}个文件夹')
+    print(f'当前正在写入第{count}/{len(sorted_subdirectories[1:])}个文件夹----{directory}')
     print(f"Deleted rows: {deleted_count:<5}   {deleted_percentage:.2f}%")
-    print(f"Kept rows:    {kept_count:<5}   {kept_percentage:.2f}%")
+    print(f"Kept rows:    {int(kept_count):<5}   {kept_percentage:.2f}%")
+    # longitude, latitude = utm113(
+        # out_center_position[0], out_center_position[1], inverse=True)
+    # print(
+        # f"中心点的经纬度坐标为：X : {longitude}  Y : {latitude}  Z : {out_center_position[2]}")
+    # 将字符串写入文件
+    # position_file_path = os.path.join(
+    #     directory_path, directory, 'center_point_position_'+str(threshold)+'.txt')
+    # with open(position_file_path, "w") as file:
+    #     file.write(f"{longitude} {latitude} {out_center_position[2]}")
     count += 1
 
 # 记录结束时间
