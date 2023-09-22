@@ -56,11 +56,14 @@ for directory in sorted_subdirectories[1:]:
 
     rectify_vertices = np.array(vertices)
     # 定义一个空列表用于存储顶点颜色信息
-    pointColors = np.zeros((len(vertices), 3), dtype=int)
+    pointColors = np.ones((len(vertices), 3), dtype=int)
+    pointColors = pointColors * 255
     for i, value in enumerate(faces):
         # print(value)
         for index in value:
-            pointColors[index] = np.array(Facecolors[i])
+            # 这里阻止颜色被浅色覆盖
+            if pointColors[index,0] > Facecolors[i][0]:
+                pointColors[index] = np.array(Facecolors[i])
             # pointColors[index] = [255,0,0]
             if rectify_vertices[index,2] == vertices[index][2]:
                 rectify_vertices[index,2] += H[i]

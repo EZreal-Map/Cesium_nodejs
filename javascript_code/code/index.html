@@ -61,6 +61,46 @@
             outline: none;
             text-align: center;
         }
+
+        #startButtonGLB {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #AnimationButtonGLB {
+            position: absolute;
+            top: 20px;
+            left: 110px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #inputNumberGLB {
+            position: absolute;
+            top: 20px;
+            left: 230px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            width: 30px;
+            outline: none;
+            text-align: center;
+        }
     </style>
 
 <body>
@@ -69,6 +109,10 @@
     <button id="startButton">Start</button>
     <button id="AnimationButton">Animation</button>
     <input type="text" id="inputNumber" value="0">
+
+    <input type="text" id="inputNumberGLB" value="0">
+    <button id="AnimationButtonGLB">Animation</button>
+    <button id="startButtonGLB">Start</button>
 
     <script type="text/javascript">
 
@@ -144,7 +188,7 @@
                 console.log("全部加载完成");
                 console.log(Object.keys(floodPrimitives).length); // 输出映射关系的长度
                 floodPrimitives = Object.values(floodPrimitives)  //把对象变成数组
-                // 此时 indexToTilesetMap 对象中保存了索引和 tileset 的关系
+                // 此时 floodPrimitives 对象中保存了索引和 tileset 的关系
             }
 
             // // async await 控制for循环的tileset同步add方式 慢但是简单因为加载的顺序好确定
@@ -281,12 +325,136 @@
                         // 修改currentTileset
                         currentTileset = floodPrimitives[inputValue - 1];
                         currentTileset.show = true
-                        inputValue
+                        // inputValue
                     } else {
                         // Invalid input, display an error message
+                        floodPrimitives.forEach((primitive) =>primitive.show = false)
                         console.log('Invalid input. Please enter a number between 1 and 175.');
                     }
                 }
+            });
+
+
+
+
+                        // viewer.entities.add({
+                
+            //     position: Cesium.Cartesian3.fromDegrees(113.3934208694067, 31.70501665106572, 61.548571),
+            //     orientation: Cesium.Transforms.headingPitchRollQuaternion(
+            //         Cesium.Cartesian3.fromDegrees(113.3934208694067, 31.70501665106572, 61.548571),
+            //         new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(0), Cesium.Math.toRadians(90), Cesium.Math.toRadians(-90))
+            //     ),
+            //     model: {
+            //         uri: '../../flood/30jiami/360/triangle_mesh_0.05.glb',
+            //     }
+            // });
+
+            async function loadingGLB(num,IsShow = true) {
+                const positionFilePath = `../../flood/30jiami/${num}/center_point_position_0.05.txt`
+                const response = await fetch(positionFilePath)
+                const data = await response.text()
+                const [x, y, z] = data.split(' ').map(parseFloat);
+                const position = Cesium.Cartesian3.fromDegrees(x, y, z);
+                return viewer.entities.add({
+                    name: num,
+                    show: IsShow,
+                    position: position,
+                    orientation: Cesium.Transforms.headingPitchRollQuaternion(
+                        position,
+                        new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(0), Cesium.Math.toRadians(90), Cesium.Math.toRadians(-90))
+                    ),
+                    model: {
+                        uri: `../../flood/30jiami/${num}/triangle_mesh_0.05.glb`,
+                        // show: IsShow
+                        // preloadWhenHidden: preload
+                    }
+                });
+            }
+
+
+            const subcontentFilePath = `../../flood/30jiami/0/subcontent.txt`
+            const response = await fetch(subcontentFilePath)
+            const data = await response.text()
+            const subcontent = data.split('\n').map(parseFloat);
+            // console.log(subcontent)
+            // loadingGLB(subcontent[23])
+            // let currentGLB = await loadingGLB(subcontent[0])
+            
+            // subcontent.forEach((item,index)=>loadingGLB(item))
+
+            // 预加载按钮模块
+            let currentTilesetGLB;
+            let floodPrimitivesGLB = {}; // 用于建立索引和 tileset 的关系
+            async function renderTilesetWithAnimationGLB(subcontent) {
+                floodPrimitivesGLB = {}
+                // 异步加载 tileset 并建立映射关系
+                await Promise.all(subcontent.map(async (item, index) => {
+                    try {
+                        const tileset = await loadingGLB(item)
+
+                        // viewer.scene.primitives.add(tileset); // 添加到场景
+                        floodPrimitivesGLB[index] = tileset // 建立索引和 tileset 的映射关系
+
+                        inputNumberGLB.value = index + 1;
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }));
+                // 在所有 tileset 加载完成后执行的代码
+                floodPrimitivesGLB = Object.values(floodPrimitivesGLB)
+                console.log(floodPrimitivesGLB.forEach(item => console.log(item.name)))
+                console.log("全部加载完成 : " + floodPrimitivesGLB.length);
+                // floodPrimitivesGLB.forEach((primitive) =>primitive.show = false);   
+            }
+
+            document.querySelector('#startButtonGLB').addEventListener('click', () => {
+                renderTilesetWithAnimationGLB(subcontent);
+            });
+    
+            const inputNumberGLB = document.querySelector('#inputNumberGLB');
+
+            inputNumberGLB.addEventListener('keyup', async function (event) {
+                if (event.key === 'Enter') {
+                    const inputValue = parseInt(inputNumberGLB.value);
+                    if (!isNaN(inputValue) && inputValue > 0 && inputValue <= 175) {
+                        // 隐藏
+                        floodPrimitivesGLB.forEach((primitive) =>primitive.show = false)
+                        // 显示
+                        floodPrimitivesGLB[inputValue-1].show = true
+                        // const nextGLB = await loadingGLB(subcontent[inputValue])
+                        // viewer.entities.remove(currentGLB)
+                        // currentGLB = nextGLB
+                    } else {
+                        // Invalid input, display an error message
+                        floodPrimitivesGLB.forEach((primitive) =>primitive.show = false)
+                        console.log('Invalid input. Please enter a number between 1 and 175.');
+                    }
+                }
+            });
+
+            // 动画按钮模块
+            // 调用函数开始动画流显示
+            // let delayBetweenShow = 100; // 每个原始对象显示的时间间隔（毫秒）
+            document.querySelector('#AnimationButtonGLB').addEventListener('click', () => {
+                let currentIndex = 0;
+                const length = subcontent.length
+                const interval = setInterval(async() => {
+                    if (currentIndex < length) {
+                        floodPrimitivesGLB.forEach((primitive) =>primitive.show = false);
+                        const intervalIndex = 1
+                        if (currentIndex - intervalIndex >= 0) {
+                            floodPrimitivesGLB[currentIndex - intervalIndex].show = false;
+                        }
+                        currentTileset = floodPrimitivesGLB[currentIndex]
+                        floodPrimitivesGLB[currentIndex].show = true;
+                        console.log(`打开: ${currentIndex}`);
+                        inputNumberGLB.value = currentIndex + 1
+                        currentIndex++;
+                        console.log("----------------------------")
+                    } else {
+                        clearInterval(interval); // 停止定时器
+                    }
+                }, delayBetweenShow);
             });
         };
 
