@@ -155,9 +155,9 @@ for directory in sorted_subdirectories[1:]:
     output_file = os.path.join(
         directory_path, directory, 'Hrgb.txt')
     # # 如果生成文件的名字取错了，可以通过这个自动删除文件
-    file_path_to_delete = os.path.join(
-        directory_path, directory, 'XYDpHrgb.txt')
-    os.remove(file_path_to_delete)
+    # file_path_to_delete = os.path.join(
+    #     directory_path, directory, 'XYDpHrgb.txt')
+    # os.remove(file_path_to_delete)
     # 保存为XYDDpH.txt
     deleted_count, kept_count, kept_data = read_and_filter_data(
         XYD_list_lines, input_file, output_file, gradient_colors)  # 调用主函数

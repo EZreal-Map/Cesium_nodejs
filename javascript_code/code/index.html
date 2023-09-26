@@ -153,6 +153,14 @@
                 }
             })
 
+            // 调整全局光源
+            viewer.scene.light = new Cesium.DirectionalLight({
+                color: new Cesium.Color(1.0, 1.0, 1.0, 1),
+                direction: new Cesium.Cartesian3(0, -1, 1), // 将方向修改为斜向建筑物
+                intensity: 10
+            });
+
+            // 加载建筑白膜
             const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(2236714, {
                 // heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
                 // show: false,

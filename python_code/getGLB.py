@@ -2,13 +2,16 @@ import trimesh
 import numpy as np
 import os
 from pyproj import Proj
+import time
 
 def get_subdirectories(directory_path):
     subdirectories = [name for name in os.listdir(
         directory_path) if os.path.isdir(os.path.join(directory_path, name))]
     return subdirectories
 
-
+# 主函数main()
+# 记录开始时间
+start_time = time.time()
 directory_path = '../flood/30jiami'
 subdirectories = get_subdirectories(directory_path)
 # 按照数字大小排序
@@ -57,13 +60,24 @@ for directory in sorted_subdirectories[1:]:
     rectify_vertices = np.array(vertices)
     # 定义一个空列表用于存储顶点颜色信息
     pointColors = np.ones((len(vertices), 3), dtype=int)
-    pointColors = pointColors * 255
+    # [149, 208, 238]
+    # pointColors = pointColors * [149, 208, 238]
+    # pointColors = pointColors * [12, 125, 100]
+    pointColors = pointColors * [255, 255, 255]
+
+
+
     for i, value in enumerate(faces):
         # print(value)
         for index in value:
             # 这里阻止颜色被浅色覆盖
+            # print(pointColors[index,0])
+            # print(Facecolors[i][0])
             if pointColors[index,0] > Facecolors[i][0]:
+                # print(np.array(Facecolors[i]))
                 pointColors[index] = np.array(Facecolors[i])
+                # pointColors[index] = np.array(Facecolors[i]) ** (0.828433033756024)
+                # print(pointColors[index])
             # pointColors[index] = [255,0,0]
             if rectify_vertices[index,2] == vertices[index][2]:
                 rectify_vertices[index,2] += H[i]
@@ -102,3 +116,10 @@ for directory in sorted_subdirectories[1:]:
     count += 1
     # 用trimesh内置的方法进行可视化
     # mesh.show()
+
+# 记录结束时间
+end_time = time.time()
+# 计算运行时间
+execution_time = end_time - start_time
+print("代码运行时间为：", execution_time, "秒")
+# 代码运行时间为： 500.0 秒
