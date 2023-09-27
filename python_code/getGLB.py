@@ -54,38 +54,19 @@ for directory in sorted_subdirectories[1:]:
     # 从不同时刻文件读取数据并拆分成顶点坐标和颜色信息
     data = np.loadtxt(Hrgb_inputfile_path, delimiter=',')
     H = data[:, :1]  # 第一列是H
-    Facecolors = data[:, 1:]    # 后三列是r, g, b颜色值
+    facesColor = data[:, 1:]    # 后三列是r, g, b颜色值
     # faces = [[0, 1, 2],[0, 1, 3]]
 
     rectify_vertices = np.array(vertices)
-    # 定义一个空列表用于存储顶点颜色信息
-    pointColors = np.ones((len(vertices), 3), dtype=int)
-    # [149, 208, 238]
-    # pointColors = pointColors * [149, 208, 238]
-    # pointColors = pointColors * [12, 125, 100]
-    pointColors = pointColors * [255, 255, 255]
-
-
 
     for i, value in enumerate(faces):
         # print(value)
         for index in value:
-            # 这里阻止颜色被浅色覆盖
-            # print(pointColors[index,0])
-            # print(Facecolors[i][0])
-            if pointColors[index,0] > Facecolors[i][0]:
-                # print(np.array(Facecolors[i]))
-                pointColors[index] = np.array(Facecolors[i])
-                # pointColors[index] = np.array(Facecolors[i]) ** (0.828433033756024)
-                # print(pointColors[index])
-            # pointColors[index] = [255,0,0]
             if rectify_vertices[index,2] == vertices[index][2]:
                 rectify_vertices[index,2] += H[i]
                 # print(rectify_vertices[index][2])
             # print(index)
 
-    pointColors = pointColors.tolist()
-    # print(pointColors)
 
     # 修改vertices，纠正glb中心点
     position_file_path = os.path.join(
@@ -105,11 +86,33 @@ for directory in sorted_subdirectories[1:]:
 
     # 清除H<0.05的faces数据
     clearFaces = []
+    clearFacesColor = []
     for i, h in enumerate(H):
         if(h > threshold):
             clearFaces.append(faces[i])
+            # 初识set值
+            # clearFacesColor.append(facesColor[i])
 
-    mesh = trimesh.Trimesh(vertices=rectify_vertices, faces=clearFaces, vertex_colors=pointColors)
+            # 伽马值γ < 1的情况有时被称作编码伽马值（encoding gamma），
+            # 而执行这个编码运算所使用上述幂定律的过程也叫做伽马压缩（gamma compression）；
+            # 相对地，伽马值γ > 1的情况有时也被称作解码伽马值（decoding gamma），
+            # 而执行这个解码运算所使用上述幂定律的过程也叫做“伽马展开（gamma expansion）”。
+            clearFacesColor.append([(val / 255) ** 2.2 * 255 for val in facesColor[i]])
+            # clearFacesColor.append([149, 208, 238])
+
+
+    mesh = trimesh.Trimesh(vertices=rectify_vertices, faces=clearFaces)
+    mesh.visual.face_colors = clearFacesColor    
+    
+    # 创建一个字典来存储自定义属性（可能有问题，目前还没起作用 -> 0927）
+    custom_attributes = {}  
+    # 为每个面分配自定义数据（例如，面的编号）
+    for i, face in enumerate(mesh.faces):
+        custom_attributes[i] = {"KHR_materials_unlit": {}}
+
+    # 将自定义属性分配给网格
+    mesh.metadata['face_attributes'] = custom_attributes
+
     # 保存为glb格式
     mesh.export(glb_outputfile_path, file_type='glb')
     

@@ -160,6 +160,11 @@
                 intensity: 10
             });
 
+            // viewer.scene.lightingImageBased = true; // 启用 IBL
+            // viewer.scene.globe.enableLighting = true; // 启用点光源照明
+            // 将场景的照明模型设置为均匀照明
+            // viewer.scene.globe.lightingModel = Cesium.LightingModel.ILLUMINATE; 
+
             // 加载建筑白膜
             const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(2236714, {
                 // heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
@@ -375,6 +380,11 @@
                         uri: `../../flood/30jiami/${num}/triangle_mesh_0.05.glb`,
                         // show: IsShow
                         // preloadWhenHidden: preload
+                        // color: Cesium.Color.fromBytes(190,228,246,230),
+                        // colorBlendAmount:0.5,
+                        colorBlendMode:Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT,
+                        // showOutline:true,
+                        // silhouetteColor: Cesium.Color.RED
                     }
                 });
             }
@@ -464,6 +474,23 @@
                     }
                 }, delayBetweenShow);
             });
+
+            // 当模型被点击时，显示自定义属性信息 (有问题，待解决 0927)
+            viewer.screenSpaceEventHandler.setInputAction(function (click) {
+                var pickedObject = viewer.scene.pick(click.position);
+                if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id)) {
+                    console.log(pickedObject)
+                    
+                    var customAttributes = pickedObject.id.customAttributes; // 获取自定义属性
+                    if (Cesium.defined(customAttributes)) {
+                        var faceNumber = customAttributes.face_number; // 获取自定义属性中的编号
+                        var name = customAttributes.name; // 获取自定义属性中的名称
+                        if (Cesium.defined(faceNumber) && Cesium.defined(name)) {
+                            alert('Face Number: ' + faceNumber + '\nName: ' + name); // 显示属性信息
+                        }
+                    }
+                }
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         };
 
         window.startup()
