@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Legend</title>
+    <style>
+        .legend-container {
+            padding: 20px;
+            border: 1px solid #ccc;
+            max-width: 180px;
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .color-box {
+            width: 50px;
+            height: 20px;
+            border: 1px solid #000;
+            margin-right: 30px;
+        }
+
+        .label-text {
+            min-width: 60px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="legend-container">
+        <div class="legend" id="legend"></div>
+    </div>
+
+    <script>
+        const intervals = [0, 0.01, 0.25, 0.50, 1.0, 1.50, 2.0, 2.5,
+            3, 3.5, 4, 4.5, 5, 7.5, 10, Infinity];
+        const startColor = [149, 208, 238];
+        const endColor = [10, 9, 145];
+
+        function generateColorGradient(numSegments, startColor, endColor) {
+            const gradientColors = [];
+            for (let i = numSegments - 1; i >= 0; i--) {  // 上下颠倒
+                const t = i / (numSegments - 1);
+                const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * t);
+                const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * t);
+                const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * t);
+                gradientColors.push(`rgb(${r}, ${g}, ${b})`);
+            }
+            return gradientColors;
+        }
+
+        const numSegments = intervals.length - 1;
+        const gradientColors = generateColorGradient(numSegments, startColor, endColor);
+
+        const legendElement = document.getElementById('legend');
+
+        for (let i = numSegments; i > 0; i--) { // 反向遍历区间
+            const legendItem = document.createElement('div');
+            legendItem.classList.add('legend-item');
+
+            const colorBox = document.createElement('div');
+            colorBox.classList.add('color-box');
+            colorBox.style.backgroundColor = gradientColors[numSegments - i]; // 使用相应的颜色
+
+            const labelText = document.createElement('div');
+            labelText.classList.add('label-text');
+            labelText.textContent = `${intervals[i - 1]} - ${intervals[i]}`; // 使用相应的区间
+
+            legendItem.appendChild(colorBox);
+            legendItem.appendChild(labelText);
+
+            legendElement.appendChild(legendItem);
+        }
+    </script>
+
+</body>
+
+</html>

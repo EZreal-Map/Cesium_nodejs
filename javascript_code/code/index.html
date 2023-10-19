@@ -101,6 +101,40 @@
             outline: none;
             text-align: center;
         }
+
+        .legend-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            max-width: 180px;
+            background-color: #fff;
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .color-box {
+            width: 50px;
+            height: 20px;
+            border: 1px solid #000;
+            margin-right: 30px;
+        }
+
+        .label-text {
+            min-width: 60px;
+        }
     </style>
 
 <body>
@@ -114,6 +148,70 @@
     <button id="AnimationButtonGLB">Animation</button>
     <button id="startButtonGLB">Start</button>
 
+    <div class="legend-container">
+        <div class="legend" id="legend">
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(10, 9, 145);"></div>
+                <div class="label-text">10 - Infinity</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(20, 23, 152);"></div>
+                <div class="label-text">7.5 - 10</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(30, 37, 158);"></div>
+                <div class="label-text">5 - 7.5</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(40, 52, 165);"></div>
+                <div class="label-text">4.5 - 5</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(50, 66, 172);"></div>
+                <div class="label-text">4 - 4.5</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(60, 80, 178);"></div>
+                <div class="label-text">3.5 - 4</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(70, 94, 185);"></div>
+                <div class="label-text">3 - 3.5</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(80, 109, 192);"></div>
+                <div class="label-text">2.5 - 3</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(89, 123, 198);"></div>
+                <div class="label-text">2 - 2.5</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(99, 137, 205);"></div>
+                <div class="label-text">1.5 - 2</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(109, 151, 211);"></div>
+                <div class="label-text">1 - 1.5</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(119, 165, 218);"></div>
+                <div class="label-text">0.5 - 1</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(129, 180, 225);"></div>
+                <div class="label-text">0.25 - 0.5</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(139, 194, 231);"></div>
+                <div class="label-text">0.01 - 0.25</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgb(149, 208, 238);"></div>
+                <div class="label-text">0 - 0.01</div>
+            </div>
+        </div>
+    </div>
     <script type="text/javascript">
 
         window.startup = async function () {
@@ -341,7 +439,7 @@
                         // inputValue
                     } else {
                         // Invalid input, display an error message
-                        floodPrimitives.forEach((primitive) =>primitive.show = false)
+                        floodPrimitives.forEach((primitive) => primitive.show = false)
                         console.log('Invalid input. Please enter a number between 1 and 175.');
                     }
                 }
@@ -350,8 +448,8 @@
 
 
 
-                        // viewer.entities.add({
-                
+            // viewer.entities.add({
+
             //     position: Cesium.Cartesian3.fromDegrees(113.3934208694067, 31.70501665106572, 61.548571),
             //     orientation: Cesium.Transforms.headingPitchRollQuaternion(
             //         Cesium.Cartesian3.fromDegrees(113.3934208694067, 31.70501665106572, 61.548571),
@@ -362,7 +460,7 @@
             //     }
             // });
 
-            async function loadingGLB(num,IsShow = true) {
+            async function loadingGLB(num, IsShow = true) {
                 const positionFilePath = `../../flood/30jiami/${num}/center_point_position_0.05.txt`
                 const response = await fetch(positionFilePath)
                 const data = await response.text()
@@ -381,8 +479,9 @@
                         // show: IsShow
                         // preloadWhenHidden: preload
                         // color: Cesium.Color.fromBytes(190,228,246,230),
+                        // color: Cesium.Color.fromBytes(255, 255, 255, 230),
                         // colorBlendAmount:0.5,
-                        colorBlendMode:Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT,
+                        colorBlendMode: Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT,
                         // showOutline:true,
                         // silhouetteColor: Cesium.Color.RED
                     }
@@ -397,7 +496,7 @@
             // console.log(subcontent)
             // loadingGLB(subcontent[23])
             // let currentGLB = await loadingGLB(subcontent[0])
-            
+
             // subcontent.forEach((item,index)=>loadingGLB(item))
 
             // 预加载按钮模块
@@ -428,7 +527,7 @@
             document.querySelector('#startButtonGLB').addEventListener('click', () => {
                 renderTilesetWithAnimationGLB(subcontent);
             });
-    
+
             const inputNumberGLB = document.querySelector('#inputNumberGLB');
 
             inputNumberGLB.addEventListener('keyup', async function (event) {
@@ -436,15 +535,15 @@
                     const inputValue = parseInt(inputNumberGLB.value);
                     if (!isNaN(inputValue) && inputValue > 0 && inputValue <= 175) {
                         // 隐藏
-                        floodPrimitivesGLB.forEach((primitive) =>primitive.show = false)
+                        floodPrimitivesGLB.forEach((primitive) => primitive.show = false)
                         // 显示
-                        floodPrimitivesGLB[inputValue-1].show = true
+                        floodPrimitivesGLB[inputValue - 1].show = true
                         // const nextGLB = await loadingGLB(subcontent[inputValue])
                         // viewer.entities.remove(currentGLB)
                         // currentGLB = nextGLB
                     } else {
                         // Invalid input, display an error message
-                        floodPrimitivesGLB.forEach((primitive) =>primitive.show = false)
+                        floodPrimitivesGLB.forEach((primitive) => primitive.show = false)
                         console.log('Invalid input. Please enter a number between 1 and 175.');
                     }
                 }
@@ -456,9 +555,9 @@
             document.querySelector('#AnimationButtonGLB').addEventListener('click', () => {
                 let currentIndex = 0;
                 const length = subcontent.length
-                const interval = setInterval(async() => {
+                const interval = setInterval(async () => {
                     if (currentIndex < length) {
-                        floodPrimitivesGLB.forEach((primitive) =>primitive.show = false);
+                        floodPrimitivesGLB.forEach((primitive) => primitive.show = false);
                         const intervalIndex = 1
                         if (currentIndex - intervalIndex >= 0) {
                             floodPrimitivesGLB[currentIndex - intervalIndex].show = false;
@@ -480,7 +579,7 @@
                 var pickedObject = viewer.scene.pick(click.position);
                 if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id)) {
                     console.log(pickedObject)
-                    
+
                     var customAttributes = pickedObject.id.customAttributes; // 获取自定义属性
                     if (Cesium.defined(customAttributes)) {
                         var faceNumber = customAttributes.face_number; // 获取自定义属性中的编号

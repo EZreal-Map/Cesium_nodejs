@@ -35,7 +35,7 @@ async function cesium_ion_post(input, position, value, index) {
                 // clampToTerrain: true,
                 // baseTerrainId: 1,
                 // position: [113.3959004660036, 31.70498971207568, 61.091201],
-                position,
+                position: position,
                 geometryCompression: 'NONE'
             }
         }

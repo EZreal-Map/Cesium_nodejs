@@ -63,7 +63,7 @@ center_file_path = os.path.join(
 with open(center_file_path, "r") as file:
     line_count = sum(1 for line in file)
 
-threshold = 0.15
+threshold = 0.0001
 # 阈值
 
 count = 1
@@ -103,6 +103,7 @@ with open(output_file, 'w') as file:
 
 # 创建柱形图
 # plt.bar(sorted_subdirectories[1:], kept_count_array)
+print(kept_count_array)
 plt.bar(range(1, len(kept_count_array) + 1), kept_count_array)
 # 设置图表标题和标签
 plt.title('threshold = '+str(threshold))
